@@ -1,0 +1,81 @@
+<!-- the field readonly field must be omitted or empty if the field is not read-only -->
+<!-- TODO: add information on which functions return values and which don't -->
+
+<builtins>
+    <object name="TextWindow">
+        <methods>
+            <method name="Clear"/>
+            <method name="Hide"/>
+            <method name="Pause"/>
+            <method name="PauseIfVisible"/>
+            <method name="PauseWithoutMessage"/>
+            <method name="Read"/>
+            <method name="ReadKey"/>
+            <method name="ReadNumber"/>
+            <method name="Show"/>
+            <method name="Write" num_args="1"/>
+            <method name="WriteLine" num_args="1"/>
+        </methods>
+        <fields>
+            <field name="BackgroundColor"/>
+            <field name="ForegroundColor"/>
+            <field name="CursorLeft"/>
+            <field name="CursorTop"/>
+            <field name="Left"/>
+            <field name="Top"/>
+            <field name="Title"/>
+        </fields>
+    </object>
+
+    <object name="GraphicsWindow">
+        <methods>
+            <method name="Clear"/>
+            <method name="DrawBoundText" num_args="4"/>
+            <method name="DrawEllipse" num_args="4"/>
+            <method name="DrawImage" num_args="3"/>
+            <method name="DrawLine"  num_args="4"/>
+            <method name="DrawRectangle" num_args="4"/>
+            <method name="DrawResizedImage" num_args="5"/>
+            <method name="DrawText" num_args="3"/>
+            <method name="DrawTriangle"  num_args="6"/>
+            <method name="FillEllipse" num_args="4"/>
+            <method name="FillRectangle" num_args="4"/>
+            <method name="FillTriangle" num_args="6"/>
+            <method name="GetColorFromRGB" num_args="3"/>
+            <method name="GetPixel" num_args="2"/>
+            <method name="GetRandomColor"/>
+            <method name="Hide"/>
+            <method name="SetPixel" num_args="3"/>
+            <method name="Show"/>
+            <method name="ShowMessage" num_args="2"/>
+        </methods>
+        <fields>
+            <field name="BackgroundColor"/>
+            <field name="BrushColor"/>
+            <field name="CanResize"/>
+            <field name="FontBold"/>
+            <field name="FontItalic"/>
+            <field name="FontName"/>
+            <field name="FontSize"/>
+            <field name="Height"/>
+            <field name="LastKey" readonly="1"/>
+            <field name="LastText" readonly="1"/>
+            <field name="Left"/>
+            <field name="MouseX" readonly="1"/>
+            <field name="MouseY" readonly="1"/>
+            <field name="PenColor"/>
+            <field name="PenWidth"/>
+            <field name="Title"/>
+            <field name="Top"/>
+            <field name="Width"/>
+        </fields>
+        <events>
+            <event name="KeyDown"/>
+            <event name="KeyUp"/>
+            <event name="MouseDown"/>
+            <event name="MouseMove"/>
+            <event name="MouseUp"/>
+            <event name="TextInput"/>
+        </events>
+    </object>
+</builtins>
