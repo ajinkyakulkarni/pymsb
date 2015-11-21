@@ -1,4 +1,4 @@
 # pymsb
-An open source implementation of the Microsoft Small Basic language.
+An open-source, cross-platform interpreter for the Microsoft Small Basic language.  
 
-The goal of this project is to produce a more stable, cross-platform and more readily updated implementation of the Microsoft Small Basic language.  (I was originally inspired to do this when the 1.0 release of MSB crashed whenever using GraphicsWindow.GetPixel, and this release seemed to be the final release for years).
+The goal is to create a more stable and bug-free implementation of the language than Microsoft's proprietary IDE.  I was inspired to do this when I noticed countless bugs in the 1.0 release of Microsoft Small Basic, and the development status of the language seemed unclear for a long time.
