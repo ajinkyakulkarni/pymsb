@@ -4,12 +4,18 @@ import time
 
 __author__ = 'Simon Tang'
 
+
 class PyMsbWindow:
-    def __init__(self, root):
+    def __init__(self, interpreter, root):
+        self.interpreter = interpreter
         self.root = root
         self.window = tk.Toplevel(root)
         self.hide()
-        self.window.protocol("WM_DELETE_WINDOW", root.destroy)
+        self.window.protocol("WM_DELETE_WINDOW", self.exit_interpreter)
+
+    def exit_interpreter(self):
+        self.interpreter.exit()
+        self.root.destroy()
 
     @property
     def Title(self):

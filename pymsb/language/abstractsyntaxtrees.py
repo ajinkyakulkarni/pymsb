@@ -139,30 +139,53 @@ class Operation:
         return "(" + repr(self.left) + self.operator + repr(self.right) + ")"
 
 
+class Comparison:
+    def __init__(self, comparator, left, right):
+        self.comparator = comparator
+        self.left = left
+        self.right = right
+
+    def __repr__(self):
+        return "(" + repr(self.left) + " " + self.comparator + " " + repr(self.right) + ")"
+
+
 class KeywordStatement(Statement):
     """ An AST representing a keyword expression. """
     def __init__(self, line_number, keyword):
         super().__init__(line_number)
         self.keyword = keyword
 
+    @property
+    def jump_target(self):
+        # noinspection PyBroadException
+        try:
+            return self.__jump_target
+        except:
+            return None
+
+    @jump_target.setter
+    def jump_target(self, x):
+        # noinspection PyAttributeOutsideInit
+        self.__jump_target = x
+
     def __repr__(self):
         return "{0}Statement<>".format(self.keyword)
 
 
 class IfStatement(KeywordStatement):
-    """ Represents an if statement (just the if statement, not the body of the statement
+    """ Represents an if statement (just the if statement, not the body of the statement)
         Keyword must be one of If, ElseIf, Else.  """
     def __init__(self, line_number, if_keyword, condition_expr):
         super().__init__(line_number, if_keyword)
         self.condition_expr = condition_expr
 
     def __repr__(self):
-        return "IfStatement<{0}>".format(self.condition_expr)
+        return "IfStatement[{0}]{1}".format(self.keyword, self.condition_expr)
 
 
 class EndIfStatement(KeywordStatement):
     def __init__(self, line_number):
-        super().__init__("EndIf", line_number)
+        super().__init__(line_number, "EndIf")
 
 
 class WhileStatement(KeywordStatement):
@@ -192,7 +215,7 @@ class ForStatement(KeywordStatement):
 
 
 class EndForStatement(KeywordStatement):
-    def __init__(self):
+    def __init__(self, line_number):
         super().__init__(line_number, "EndFor")
 
 

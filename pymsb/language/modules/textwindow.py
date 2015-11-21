@@ -1,4 +1,6 @@
+from queue import Queue
 import tkinter as tk
+import time
 from pymsb.language.modules import utilities as py_msb_utils
 from pymsb.language.modules.interface import PyMsbWindow
 from idlelib.WidgetRedirector import WidgetRedirector
@@ -6,17 +8,16 @@ from idlelib.WidgetRedirector import WidgetRedirector
 # TODO: implement text input inside the output console instead of in a separate tk.Entry
 # TODO: make the window follow the insertion cursor.
 
-from pymsb.language.process import ProcessBlock, Process, WaitingProcess
-
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
 class TextWindow(PyMsbWindow):
     BLANK = ""
     ALL = "ALL"
     NUMERICAL = "NUMERICAL"
+    INPUT_DISABLED = "INPUT_DISABLED"
 
     def __init__(self, interpreter, root):
-        super().__init__(root)
+        super().__init__(interpreter, root)
 
         self.interpreter = interpreter
 
@@ -49,7 +50,6 @@ class TextWindow(PyMsbWindow):
         self.input_box.bind("<Return>", self.on_input_box_return)
         self.input_box.bind("<Key>", self.on_input_box_key)
         self.input_box.focus()
-        self.input_box.configure(state=tk.DISABLED)
 
         scroll_y.config(command=self.text_box.yview)
 
@@ -62,33 +62,28 @@ class TextWindow(PyMsbWindow):
 
         self.prepare_color_tags()
 
-        self.cached_user_input = []
-        self.pause_processes = []
+        self.cached_user_input = Queue()
 
-        self.current_input_mode = None
+        self.current_input_mode = TextWindow.INPUT_DISABLED
 
     def on_insert_change(self, result, *args):
         print("result: ", result)
         print("args: ", args)
 
     def on_input_box_return(self, event):
-        if self.pause_processes:
-            self.pause_processes[-1].resolve()
-
+        user_input = self.input_box.get().splitlines()
+        if user_input:
+            for line in user_input:
+                self.cached_user_input.put(line)
         else:
-            user_input = self.input_box.get().splitlines()
-            if user_input:
-                self.cached_user_input.extend(user_input)
-            else:
-                self.cached_user_input.append("")
-            self.input_box.delete(0, tk.END)
-            self.input_box.configure(state=tk.DISABLED)
+            self.cached_user_input.put("")
+        self.input_box.delete(0, tk.END)
 
     def on_input_box_key(self, event):
         pass
 
     def has_user_input(self):
-        return len(self.cached_user_input) > 0
+        return not self.cached_user_input.empty()
 
     def prepare_color_tags(self):
         # Prepare all the color tags for text
@@ -96,6 +91,28 @@ class TextWindow(PyMsbWindow):
             self.text_box.tag_configure("foreground_" + name, foreground=val)
             self.text_box.tag_configure("background_" + name, background=val)
             self.text_box.tag_configure("output")
+
+    @property
+    def current_input_mode(self):
+        return self.__current_input_mode
+
+    @current_input_mode.setter
+    def current_input_mode(self, mode):
+        # TODO: add restrictions on the input that can be accepted as it is typed
+        # TODO: update this when we no longer use external box
+        self.__current_input_mode = mode
+        if mode == TextWindow.INPUT_DISABLED:
+            self.input_box.configure(state=tk.DISABLED)
+            return
+
+        self.input_box.configure(state=tk.NORMAL)
+        if mode == TextWindow.BLANK:
+            pass
+        elif mode == TextWindow.NUMERICAL:
+            pass
+        elif mode == TextWindow.ALL:
+            pass
+
 
     @property
     def BackgroundColor(self):
@@ -143,49 +160,59 @@ class TextWindow(PyMsbWindow):
         self.Show()
         self.current_input_mode = TextWindow.BLANK
 
-        # Check if we've "unpaused" the most recent call to pause  TODO: decide if it should be LIFO or FIFO
-        if self.pause_processes and self.pause_processes[-1].state == Process.FINISHED:
-            self.pause_processes.pop()
-            return
-
         if message is not None:
             self.WriteLine(message)
 
-        # Otherwise, pause the current process
-        p = TextWindowPauseProcess()
-        self.pause_processes.append(p)
-        raise ProcessBlock(p)
+        # TODO: decide if cached user input should skip Pause (right now, it does)
+        self.Read()
 
     def PauseIfVisible(self):
         if self.is_visible():
             self.Pause()
 
     def PauseWithoutMessage(self):
+        # noinspection PyTypeChecker
         self.Pause(message=None)
 
     def Read(self):
         self.Show()
 
-        # If there is user input cached up, then return a line of that.
-        if self.has_user_input():
-            user_input = self.cached_user_input.pop(0)
-            tmp = self.ForegroundColor
-            self.ForegroundColor = "green"
-            self.WriteLine(user_input)
-            self.ForegroundColor = tmp
-            return user_input
+        self.current_input_mode = TextWindow.ALL
 
-        # Otherwise, block the process until we get user input.
-        self.input_box.configure(state=tk.NORMAL)
-        p = ReadUserInputProcess(self.has_user_input)
-        raise ProcessBlock(p)
+        # Wait for user input
+        while not self.has_user_input():
+            time.sleep(0.1)
+        self.current_input_mode = None
+
+        user_input = self.cached_user_input.get(0)
+        self.cached_user_input.task_done()
+
+        tmp = self.ForegroundColor
+        self.ForegroundColor = "green"
+        self.WriteLine(user_input)
+        self.ForegroundColor = tmp
+        return user_input
 
     def ReadKey(self):
-        self.Show()  # todo: implement
+        # Note - ReadKey exists in MSB but MSB 1.2 IDE doesn't display it in the autocomplete for some reason
+        # (another reason why Microsoft can't be trusted to implement their own language)
+        # TODO: make ReadKey only take exactly one character out of the input
+        # TODO: figure out the behaviour of ReadKey() when enter, tab, etc. are involved
+        return self.Read()[0]
 
     def ReadNumber(self):
         self.Show()
-        return self.Read()  # todo: implement
+        # TODO: make the text box reject invalid input as it is entered instead of rejecting entire lines of input
+        while True:
+            self.current_input_mode = TextWindow.NUMERICAL
+            user_input = self.Read()
+            try:
+                return str(int(user_input))
+            except (ValueError, OverflowError):
+                try:
+                    return str(float(user_input))  # this allows values like "inf" and other junk through
+                except ValueError:
+                    continue
 
     # noinspection PyMethodMayBeStatic
     def Show(self):
@@ -257,11 +284,3 @@ class TextWithInsertChangeCallback(tk.Text):
 
     def _callback(self, result, *args):
         self.callback(result, *args)
-
-
-class ReadUserInputProcess(WaitingProcess):
-    pass
-
-
-class TextWindowPauseProcess(WaitingProcess):
-    pass

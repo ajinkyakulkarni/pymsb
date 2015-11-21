@@ -21,7 +21,7 @@ class PyMsbUnexpectedTokenError(PyMsbSyntaxError):
 class PyMsbExpectedTokenError(PyMsbSyntaxError):
     def __init__(self, line_number, line_index, *expected_token_types):
         if expected_token_types:
-            super().__init__(line_number, line_index, "Expected one of [" + "], [".join(*expected_token_types) + "].")
+            super().__init__(line_number, line_index, "Expected one of " + ", ".join(expected_token_types) + ".")
         else:
             super().__init__(line_number, line_index, "Unexpected end of expression.")
         self.expected_token_types = expected_token_types

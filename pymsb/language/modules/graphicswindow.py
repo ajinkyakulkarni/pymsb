@@ -4,7 +4,7 @@ from pymsb.language.modules.interface import PyMsbWindow
 
 class GraphicsWindow(PyMsbWindow):
     def __init__(self, interpreter, root):
-        super().__init__(root)
+        super().__init__(interpreter, root)
 
         self.interpreter = interpreter
 

@@ -1,11 +1,8 @@
-from collections import deque, OrderedDict
+from collections import OrderedDict
+from queue import LifoQueue
 from pymsb.language import abstractsyntaxtrees as ast
 import pymsb.language.errors as errors
 import re
-
-# TODO: correct the following differences between MS Small Basic and Py_MSB:
-# Text.Append(3"hi") should be treated as Text.Append(3, "hi")
-# Text.Append(3 "hi") should be treated as Text.Append(3, "hi")
 
 
 class Parser:
@@ -17,6 +14,9 @@ class Parser:
 
     def parse(self, code):
         asts = []
+        # noinspection PyAttributeOutsideInit
+        self.open_code_block_asts = []  # for matching up the starts and ends of code blocks
+
         for self.line_number, self.line in enumerate(code.splitlines()):
             try:
                 ast = self.__parse_tokens(self.tokenize(self.line))
@@ -73,7 +73,7 @@ class Parser:
             if next_token.token_type == MsbToken.R_PARENS:
                 return arg_asts
 
-    def __parse_expr(self, *closing_braces, allow_empty=False):
+    def __parse_expr(self, *closing_braces, allow_comparators=False, allow_empty=False):
         """ Parses the given self.tokens beginning from the given index, until the closing brace is encountered (or end of
         line, if opening_brace = None).  Returns a tuple consisting of the index immediately after the end of the
         expression, and the AST representing the expression. """
@@ -84,18 +84,17 @@ class Parser:
         # Catch the case of empty expression - examples:
         # a =
         # b = 20 * ()
-        if (not allow_empty and
-                    self.token_index < len(self.tokens) and
-                    self.tokens[self.token_index].token_type in closing_braces):
-            raise errors.PyMsbExpectedExpressionError(self.line_number, self.__get_token(0).line_index)
+        if not allow_empty:
+            if self.token_index < len(self.tokens) and self.tokens[self.token_index].token_type in closing_braces:
+                raise errors.PyMsbExpectedExpressionError(self.line_number, self.__get_token(0).line_index)
 
         # Process into list of alternating operand asts and operator self.tokens, then consider order of precedence
-        opds_and_ops = []
+        expr_elements = []
         while True:
             # loop until we get to a closing brace/bracket/blank space (at this level of nesting)
             # Find operand
             t = self.__get_token(0, MsbToken.LITERAL, MsbToken.L_PARENS, MsbToken.SYMBOL, MsbToken.COMMA,
-                               *closing_braces)
+                                 *closing_braces)
 
             if not t:
                 break
@@ -106,7 +105,7 @@ class Parser:
             # Start a nested expression
             if t.token_type == MsbToken.L_PARENS:
                 self.token_index += 1
-                opd = self.__parse_expr(MsbToken.R_PARENS)
+                opd = self.__parse_expr(MsbToken.R_PARENS, allow_comparators=allow_comparators)
 
             # The literal is the entire operand
             elif t.token_type == MsbToken.LITERAL:
@@ -123,11 +122,13 @@ class Parser:
             elif t.token_type == MsbToken.SYMBOL:
 
                 # either a built-in object field, or a built-in object function call, or a user variable
-                t2 = self.__get_token(1, MsbToken.DOT, MsbToken.OPERATOR, MsbToken.L_PARENS, MsbToken.L_BRACKET,
-                                      *closing_braces)
+                t2 = self.__get_token(1, MsbToken.DOT, MsbToken.OPERATOR, MsbToken.COMPARATOR, MsbToken.EQUALS,
+                                      MsbToken.L_PARENS, MsbToken.L_BRACKET, *closing_braces)
 
                 # just a user-defined variable.
-                if not t2 or t2.token_type in closing_braces or t2.token_type == MsbToken.OPERATOR:
+                if ((not t2) or
+                        (t2.token_type in closing_braces) or
+                        (t2.token_type in (MsbToken.OPERATOR, MsbToken.EQUALS, MsbToken.COMPARATOR))):
                     opd = ast.UserVariable(t.value)
                     self.token_index += 1
 
@@ -153,46 +154,87 @@ class Parser:
                         self.token_index += 3
                         opd = ast.MsbObjectField(t.value, field_token.value)
 
-            opds_and_ops.append(opd)
+            # noinspection PyUnboundLocalVariable
+            expr_elements.append(opd)
 
-            # Find operator after the operand, or end of the expression
-            t = self.__get_token(0, MsbToken.OPERATOR, MsbToken.COMMA, MsbToken.EQUALS, *closing_braces)
+            # Find operator (maybe comparator) after the operand, or end of the expression
+            if allow_comparators:
+                t = self.__get_token(0, MsbToken.OPERATOR, MsbToken.COMPARATOR, MsbToken.EQUALS, MsbToken.COMMA,
+                                     *closing_braces)
+            else:
+                t = self.__get_token(0, MsbToken.OPERATOR, MsbToken.COMMA, *closing_braces)
 
             if not t:
                 break
             self.token_index += 1
-            if t.token_type in (MsbToken.OPERATOR, MsbToken.EQUALS):
-                opds_and_ops.append(t.value)
-            elif t.token_type in closing_braces:
+
+            if t.token_type in closing_braces:
                 break
+            else:
+                expr_elements.append(t.value)
 
         # Process into nested expression asts
-        op_precedences = "*/+-"
+        op_precedences = list("*/+-")
+        if allow_comparators:
+            op_precedences += ["<", "<=", "=", ">=", ">", "<>"]
         for op_finding in op_precedences:
-            while op_finding in opds_and_ops:
-                ind2 = opds_and_ops.index(op_finding)
-                left = opds_and_ops[ind2-1]
-                right = opds_and_ops[ind2+1]
-                opds_and_ops[ind2-1] = ast.Operation(op_finding, left, right)
-                del opds_and_ops[ind2]
-                del opds_and_ops[ind2]
+            while op_finding in expr_elements:
+                ind2 = expr_elements.index(op_finding)
+                left = expr_elements[ind2-1]
+                right = expr_elements[ind2+1]
+                if op_finding in "*/+-":
+                    expr_elements[ind2-1] = ast.Operation(op_finding, left, right)
+                else:
+                    expr_elements[ind2-1] = ast.Comparison(op_finding, left, right)
+                del expr_elements[ind2]
+                del expr_elements[ind2]
 
-        if opds_and_ops:
-            return opds_and_ops[0]
+        if expr_elements:
+            return expr_elements[0]
         return None
 
     def __parse_keyword_statement(self):
-        kw = self.__get_token(0).token_type
+        def assert_open_code_block(*open_code_block_keywords):
+            if open_block_keyword not in open_code_block_keywords:
+                raise errors.PyMsbUnexpectedTokenError(kw_token)
+                # raise errors.PyMsbExpectedTokenError(self.line_number, 0, *open_code_block_keywords)
 
-        if kw in ("If", "ElseIf"):
-            self.token_index += 1
-            conditional_expr = self.__parse_expr("Then")
-            return ast.IfStatement(self.line_number, kw, conditional_expr)
+        kw_token = self.__get_token(0)
+        open_block_keyword = self.open_code_block_asts[-1].keyword if self.open_code_block_asts else None
 
-        if kw == "Else":
-            return ast.IfStatement(self.line_number, kw, None)
+        # ==========================================================================================
+        # IFS
+        if kw_token.token_type in ("If", "ElseIf", "Else"):
+            # Check previous token type
+            if kw_token.token_type in ("ElseIf", "Else"):
+                assert_open_code_block("If", "ElseIf", "Else")
 
-        if kw == "For":
+            # Parse conditional expression
+            if kw_token.token_type != "Else":
+                self.token_index += 1
+                conditional_expr = self.__parse_expr("Then", allow_comparators=True)
+            else:
+                conditional_expr = None
+
+            answer = ast.IfStatement(self.line_number, kw_token.token_type, conditional_expr)
+
+            # Link previous If/ElseIf/Else to this ElseIf/Else
+            if kw_token.token_type in ("ElseIf", "Else"):
+                self.open_code_block_asts.pop().jump_target = answer
+
+            self.open_code_block_asts.append(answer)
+            return answer
+
+        if kw_token.token_type == "EndIf":
+            assert_open_code_block("If", "ElseIf", "Else")
+            # Link previous If/ElseIf/Else to this ElseIf/Else
+            answer = ast.EndIfStatement(self.line_number)
+            self.open_code_block_asts.pop().jump_target = answer
+            return answer
+
+        # ==========================================================================================
+        # FOR
+        if kw_token.token_type == "For":
             var = self.__get_token(1, MsbToken.SYMBOL)
             self.__get_token(2, 2, MsbToken.EQUALS)
             self.token_index += 3
@@ -200,25 +242,36 @@ class Parser:
             upper_expr = self.__parse_expr()
             return ast.ForStatement(self.line_number, lower_expr, upper_expr)
 
-        if kw == "EndFor":
+        if kw_token.token_type == "EndFor":
             return ast.EndForStatement(self.line_number)
 
-        if kw == "While":
+        # ==========================================================================================
+        # WHILE
+        if kw_token.token_type == "While":
             self.token_index += 1
             conditional_expr = self.__parse_expr()
             return ast.WhileStatement(self.line_number, conditional_expr)
 
-        if kw == "EndWhile":
+        if kw_token.token_type == "EndWhile":
             return ast.EndWhileStatement(self.line_number)
 
-        if kw == "Sub":
+        # ==========================================================================================
+        # SUB
+        # TODO: make this use something similar to what the ifs are using or at least have the right checks
+        if kw_token.token_type == "Sub":
             sub_name = self.__get_token(1, MsbToken.SYMBOL).value
             self.__get_token(2, None)
-            return ast.SubStatement(self.line_number, sub_name)
+            answer = ast.SubStatement(self.line_number, sub_name)
+            self.open_code_block_asts.append(answer)
+            return answer
 
-        if kw == "EndSub":
+        if kw_token.token_type == "EndSub":
             self.__get_token(1, None)
-            return ast.EndSubStatement(self.line_number)
+            answer = ast.EndSubStatement(self.line_number)
+            return answer
+
+        # ==========================================================================================
+        # GOTO
 
     def __parse_tokens(self, tokens):
         if not tokens:
@@ -263,7 +316,7 @@ class Parser:
             else:
                 self.token_index = 4
                 expr_ast = self.__parse_expr()
-                answer = ast.Assignment(ast.MsbObjectField(obj.value, field.value), expr_ast)
+                answer = ast.Assignment(self.line_number, ast.MsbObjectField(obj.value, field.value), expr_ast)
 
             # Should have no more tokens
             self.__get_token(0, None)
@@ -306,7 +359,7 @@ class MsbToken:
     DOT = "."
     COMMA = ","
     COLON = ":"
-    COMPARATOR = "<=, >=, <, >"
+    COMPARATOR = "<=, >=, <, >, <>"
     OPERATOR = "+, -, *, /"
     EQUALS = "="  # TODO: remember that EQUALS can be assignment or a comparator based on context,
                   # but MsbToken with = will be EQUALS and not COMPARATOR
@@ -339,7 +392,7 @@ class MsbToken:
     regexes[DOT] = "\."
     regexes[COMMA] = ","
     regexes[COLON] = ":"
-    regexes[COMPARATOR] = "<=|>=|<|>"
+    regexes[COMPARATOR] = "<=|>=|<>|<|>"
     regexes[EQUALS] = "="
     regexes[OPERATOR] = "[-#+*/]"
     regexes[COMMENT] = "'.*"
@@ -371,29 +424,3 @@ class MsbToken:
     @classmethod
     def generate_unexpected_token(cls, value, line_number, line_index):
         return MsbToken(cls.UNEXPECTED_TOKEN, value, line_number, line_index)
-
-
-if __name__ == "__main__":
-    code = """
-    e = a + (b + 3)
-    f = a
-    TextWindow.Width = TextWindow.Height - Text.Length(TextWindow.Title) * Math.Min(30, 20)
-    TextWindow.DrawCircle(10,20,TextWindow.GetSomeGetter(),b)
-    my_var = SomeObj.GetSomeValue()
-    x = Obj.Func(10)
-    x = Obj.Func(10,)
-    a[1] = 2
-    a[b[2]] = b[a[1]]
-    Sub hello
-    EndSub
-    for i = 1 To 10
-        TextWindow.WriteLine(i)
-    endFor
-    """.strip()
-
-    parser = Parser()
-    statements = parser.parse(code)
-    # statements = parser.parse("Sub hello")
-    for s in statements:
-        print(s)
-
