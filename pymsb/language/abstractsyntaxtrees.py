@@ -205,8 +205,9 @@ class EndWhileStatement(KeywordStatement):
 
 class ForStatement(KeywordStatement):
     """ Represents a for statement (just the for statement, not the body of the loop) """
-    def __init__(self, line_number, lower_expr, upper_expr):
+    def __init__(self, line_number, var_ast, lower_expr, upper_expr):
         super().__init__(line_number, "For")
+        self.var_ast = var_ast
         self.lower_expr = lower_expr
         self.upper_expr = upper_expr
 

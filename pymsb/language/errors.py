@@ -9,7 +9,7 @@ class PyMsbSyntaxError(Exception):
         self.message = message
 
     def __str__(self):
-        return "{0},{1}:\t{2}".format(self.line_number, self.line_index, self.message)
+        return "{0}, {1}:\t{2}".format(self.line_number, self.line_index, self.message)
 
 
 class PyMsbUnexpectedTokenError(PyMsbSyntaxError):

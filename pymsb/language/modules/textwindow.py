@@ -7,6 +7,7 @@ from idlelib.WidgetRedirector import WidgetRedirector
 
 # TODO: implement text input inside the output console instead of in a separate tk.Entry
 # TODO: make the window follow the insertion cursor.
+# TODO: rework textwindow so input is inserted directly into window instead of textbox below, and allow cursor in any position in range
 
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
@@ -195,9 +196,10 @@ class TextWindow(PyMsbWindow):
 
     def ReadKey(self):
         # Note - ReadKey exists in MSB but MSB 1.2 IDE doesn't display it in the autocomplete for some reason
-        # (another reason why Microsoft can't be trusted to implement their own language)
-        # TODO: make ReadKey only take exactly one character out of the input
+        # (another reason why Microsoft's own implementation of MSB is unreliable)
+        # TODO: make ReadKey only take exactly one character out of the input instead of removing a line
         # TODO: figure out the behaviour of ReadKey() when enter, tab, etc. are involved
+        # TODO: implement ReadKey after revamping the console
         return self.Read()[0]
 
     def ReadNumber(self):

@@ -65,6 +65,32 @@ if __name__ == "__main__":
     TextWindow.foregroundcolor = "gray"
     """
 
+    for_test = """
+    for i = 1 to 10
+      TextWindow.WriteLine("i = " + i)
+    endfor
+    textwindow.writeline("-------------------")
+    for i = 1 to 1
+      TextWindow.WriteLine("i = " + i)
+    endfor
+    textwindow.writeline("-------------------")
+    for i = 10 to 1
+      TextWindow.WriteLine("this should not be printed.")
+    endfor
+
+    for i = "" to "a"
+      textwindow.writeline("apparently this should print once and exit.")
+    endfor
+
+    ' This kills the PyMSB
+    for i = "a" to "a11"  ' NOTE: this shouldn't allow the loop to exit
+      Textwindow.writeLINE("i: " + i)
+      textwindow.writeline("continue?")
+      textwindow.pausewithoutmessage()  ' for sanity
+    endfor
+    """
+
     interpreter = Interpreter()
     # interpreter.run(window_and_cursor_test)
-    interpreter.run(sub_input_if_test)
+    # interpreter.run(sub_input_if_test)
+    interpreter.run(for_test)

@@ -14,8 +14,9 @@ class Parser:
 
     def parse(self, code):
         asts = []
+        # This keeps track of what code blocks are "open" right now in the current part of the code
         # noinspection PyAttributeOutsideInit
-        self.open_code_block_asts = []  # for matching up the starts and ends of code blocks
+        self.open_code_block_asts = []
 
         for self.line_number, self.line in enumerate(code.splitlines()):
             try:
@@ -25,6 +26,11 @@ class Parser:
                 continue
             if ast:
                 asts.append(ast)
+
+        if self.open_code_block_asts:
+            # We didn't close our code blocks
+            # TODO: give detailed output of what we're missing
+            raise errors.PyMsbExpectedExpressionError(self.line_number, "Missing the closing for " + repr(self.open_code_block_asts[-1]))
         return asts
 
     def tokenize(self, line, include_comments=False):
@@ -235,15 +241,24 @@ class Parser:
         # ==========================================================================================
         # FOR
         if kw_token.token_type == "For":
-            var = self.__get_token(1, MsbToken.SYMBOL)
+            var = self.__get_token(1, MsbToken.SYMBOL).value
+            var_ast = ast.UserVariable(var)  # note, in MSB "For array[0] = 1 to 10" is not valid
             self.__get_token(2, 2, MsbToken.EQUALS)
             self.token_index += 3
             lower_expr = self.__parse_expr("To")  # remember to match capitalization in MsbToken.keywords
             upper_expr = self.__parse_expr()
-            return ast.ForStatement(self.line_number, lower_expr, upper_expr)
+            answer = ast.ForStatement(self.line_number, var_ast, lower_expr, upper_expr)
+            self.open_code_block_asts.append(answer)
+            return answer
 
         if kw_token.token_type == "EndFor":
-            return ast.EndForStatement(self.line_number)
+            # Link the for and endfor asts together
+            assert_open_code_block("For")
+            answer = ast.EndForStatement(self.line_number)
+            for_ast = self.open_code_block_asts.pop()
+            for_ast.jump_target = answer
+            answer.jump_target = for_ast
+            return answer
 
         # ==========================================================================================
         # WHILE

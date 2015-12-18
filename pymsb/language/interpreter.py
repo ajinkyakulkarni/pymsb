@@ -1,6 +1,5 @@
 """This module contains the interpreter that executes a list of Instructions created
 by the Parser class."""
-from ast import literal_eval
 
 import tkinter as tk
 import threading
@@ -109,9 +108,18 @@ class Interpreter:
                                              destination_ast.msb_object_field_name,
                                              self.evaluate_expression_ast(value_ast))
 
+    def increment_value(self, var_ast):
+        # Increments the variable that has the given name by 1.  If not defined, this defines var_name to be 1.
+        if isinstance(var_ast, ast.UserVariable):
+            val = self.evaluate_operation("+", var_ast, ast.LiteralValue(1))
+            self.environment.bind(var_ast.variable_name, val)
+        else:
+            raise errors.PyMsbRuntimeError(
+                "Internal error - tried to increment non-UserVariable in Interpreter.increment_value")
+
     def evaluate_comparison_ast(self, val_ast):
         # Important - returns "True" or "False" if this is actually a comparison
-        # Otherwise, evaluates as an expression and returns the string result (e.g. "10" or "concatstr")
+        # Otherwise, evaluates as an expression and returns the string result (e.g. "10" or "concatstr" or even "true")
         if isinstance(val_ast, ast.Comparison):
             return self.evaluate_comparison(val_ast.comparator, val_ast.left, val_ast.right)
         return self.evaluate_expression_ast(val_ast)
@@ -123,6 +131,7 @@ class Interpreter:
             return self.environment.get_variable(val_ast.variable_name)
         if isinstance(val_ast, ast.UserVariableArrayAccess):
             try:
+                # TODO: rigorously check what can and can't be done in MSB regarding array access/modifcation
                 arr = self.to_dict(self.environment.get_variable(val_ast.variable_name))
                 index = self.evaluate_expression_ast(val_ast.index_expr)
                 return arr.get(index, "")
@@ -154,7 +163,8 @@ class Interpreter:
         # TODO: implement the event things
         setattr(self.msb_objects[utilities.capitalize(obj_name)], utilities.capitalize(event_name), sub_name)
 
-    def convert_string_value(self, x, force_numeric):
+    @staticmethod
+    def convert_string_value(x, force_numeric):
         try:
             return int(x)
         except (ValueError, OverflowError):
@@ -168,8 +178,9 @@ class Interpreter:
                 return x
 
     def evaluate_comparison(self, comp, left, right):
-        # returns "True" or "False"
-        # possible comp values <=, >=, <, >, <>, =
+        # returns "True" or "False" - VERY IMPORTANT NOTE: returns the strings and not boolean values.
+        # possible comp values are strings "<=", ">=", "<", ">", "<>", "="
+        # left, right are asts
 
         left = self.evaluate_comparison_ast(left)
         right = self.evaluate_comparison_ast(right)
@@ -188,6 +199,8 @@ class Interpreter:
                     (comp == ">=" and left >= right)))
 
     def evaluate_operation(self, op, left, right):
+        # op is "+", "-", "*" or "/"
+        # left, right are expression asts
         left = self.evaluate_expression_ast(left)
         if isinstance(left, str):
             left = self.convert_string_value(left, op != "+")
@@ -267,7 +280,7 @@ class InterpreterThread(threading.Thread):
 
     def execute_next_instruction(self):
         statement = self.statements[self.line_number]
-        time.sleep(0.1)  # TODO: remove this, it's just an artificial slow-down
+        # time.sleep(0.1)  # TODO: remove this, it's just an artificial slow-down
 
         if isinstance(statement, ast.Assignment):
             self.interpreter.assign(statement.var, statement.val, statement.line_number)
@@ -303,8 +316,7 @@ class InterpreterThread(threading.Thread):
                         break  # let the interpreter continue on to the next line
                     else:
                         # Check the next branch
-                        target = statement.jump_target
-                        while self.statements[self.line_number] != target:
+                        while self.statements[self.line_number] != statement.jump_target:
                             self.line_number += 1
                         statement = self.statements[self.line_number]
             else:
@@ -320,6 +332,27 @@ class InterpreterThread(threading.Thread):
 
         elif isinstance(statement, ast.EndIfStatement):
             pass
+
+        elif isinstance(statement, ast.ForStatement):
+            # When we reach ForStatement, set the loop variable to the lower expression.
+            # Do a one-time check if loop variable is greater than the upper expression.
+            # Then advance; the matching EndForStatement handles the rest of the loop logic.
+            self.interpreter.assign(statement.var_ast, statement.lower_expr)
+            if self.interpreter.evaluate_comparison(">", statement.var_ast, statement.upper_expr) == "True":
+                print("var: " + repr(statement.var_ast) + " is greater than " + repr(statement.upper_expr))
+                while self.statements[self.line_number] != statement.jump_target:
+                    self.line_number += 1
+
+        elif isinstance(statement, ast.EndForStatement):
+            # When we reach EndForStatement, we always increment the variable.
+            # If loop variable is greater than upper expression, advance to next line.  We always reevaluate upper expr.
+            # Otherwise, increment loop variable and go to line immediately after the corresponding ForStatement
+            for_ast = statement.jump_target
+            self.interpreter.increment_value(for_ast.var_ast)
+            if self.interpreter.evaluate_comparison(">", for_ast.var_ast, for_ast.upper_expr) == "True":
+                pass
+            else:
+                self.line_number = self.statements.index(for_ast)  # line number gets incremented again after
 
         else:
             raise NotImplementedError(repr(statement))
