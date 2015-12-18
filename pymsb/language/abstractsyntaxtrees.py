@@ -8,6 +8,19 @@ class Statement:
     def __init__(self, line_number):
         self.line_number = line_number
 
+    @property
+    def jump_target(self):
+        # noinspection PyBroadException
+        try:
+            return self.__jump_target
+        except:
+            return None
+
+    @jump_target.setter
+    def jump_target(self, x):
+        # noinspection PyAttributeOutsideInit
+        self.__jump_target = x
+
 
 class Assignment(Statement):
     """ An AST representing an assignment to a named variable or MsbObjectField on the left-hand side,
@@ -120,6 +133,15 @@ class LabelDefinition(Statement):
         self.label_name = label_name
 
 
+class GotoStatement(Statement):
+    """ An AST representing a Goto statement """
+
+    def __init__(self, line_number, label_name):
+        super().__init__(line_number)
+        self.line_number = line_number
+        self.label_name = label_name
+
+
 class SubroutineCall(Statement):
     """ An AST representing a call to a Microsoft Small Basic subroutine (syntactic sugar for goto).
     """
@@ -154,19 +176,6 @@ class KeywordStatement(Statement):
     def __init__(self, line_number, keyword):
         super().__init__(line_number)
         self.keyword = keyword
-
-    @property
-    def jump_target(self):
-        # noinspection PyBroadException
-        try:
-            return self.__jump_target
-        except:
-            return None
-
-    @jump_target.setter
-    def jump_target(self, x):
-        # noinspection PyAttributeOutsideInit
-        self.__jump_target = x
 
     def __repr__(self):
         return "{0}Statement<>".format(self.keyword)

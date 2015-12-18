@@ -47,29 +47,7 @@ class Interpreter:
         self.exit()
 
     def scan_code(self):
-        line_num = 0
-
-        while line_num < len(self.statements):
-            stmt_ast = self.statements[line_num]
-
-            # Subroutines - save starting line numbers for subroutines, then skip until EndSub
-            if isinstance(stmt_ast, ast.SubStatement):
-                self.environment.bind_sub(stmt_ast.sub_name, line_num)
-                while True:
-                    line_num += 1
-                    if line_num == len(self.statements):
-                        raise errors.PyMsbSyntaxError(line_num, 0, "Expected EndSub here")
-                    if isinstance(self.statements[line_num], ast.SubStatement):
-                        raise errors.PyMsbSyntaxError(line_num, 0,
-                                                      "A subroutine cannot be defined inside of another subroutine.")
-                    if isinstance(self.statements[line_num], ast.EndSubStatement):
-                        break
-
-            # Labels - save line numbers for labels
-            elif isinstance(stmt_ast, ast.LabelDefinition):
-                self.environment.bind_label(stmt_ast.label_name, line_num)
-
-            line_num += 1
+        pass  # TODO: remove if not used
 
     def start_main_thread(self):
         p = InterpreterThread(self, 0)
@@ -225,8 +203,6 @@ class Interpreter:
 class Environment:
     def __init__(self):
         self.variable_bindings = {}
-        self.sub_location_bindings = {}
-        self.label_bindings = {}
 
     def bind(self, var, val):
         self.variable_bindings[var.lower()] = val
@@ -234,32 +210,8 @@ class Environment:
     def get_variable(self, var):
         return self.variable_bindings.setdefault(var.lower(), "")
 
-    def get_sub_location(self, sub_name):
-        return self.sub_location_bindings[sub_name.lower()]
-
-    def get_label_location(self, label_name):
-        return self.label_bindings[label_name.lower()]
-
-    def is_subroutine(self, name):
-        return name.lower() in self.sub_location_bindings
-
-    def is_label(self, name):
-        return name.lower() in self.label_bindings
-
     def is_array(self, var):
         return False  # TODO: implement Environment.is_array
-
-    def bind_sub(self, sub_name, line_number):
-        if sub_name.lower() in self.sub_location_bindings:
-            raise errors.PyMsbSyntaxError(
-                line_number, 0, "Another Subroutine exists with the same name '{0}'".format(sub_name))
-        self.sub_location_bindings[sub_name.lower()] = line_number
-
-    def bind_label(self, label_name, line_number):
-        if label_name.lower() in self.label_bindings:
-            raise errors.PyMsbSyntaxError(
-                line_number, 0, "Another Label exists with the same name '{0}'".format(label_name))
-        self.label_bindings[label_name.lower()] = line_number
 
 
 class InterpreterThread(threading.Thread):
@@ -296,11 +248,13 @@ class InterpreterThread(threading.Thread):
 
         elif isinstance(statement, ast.SubroutineCall):
             self.sub_return_locations.append(self.line_number)
-            self.line_number = self.environment.get_sub_location(statement.name)
+            self.line_number = self.statements.index(statement.jump_target)
 
         elif isinstance(statement, ast.EndSubStatement):
-            # first value in (last out) is line number out of range, so if we get to it,
-            # it means we started this thread inside this sub call, so we are done this thread
+            # Return to where we were before calling the subroutine.
+            # The first value in sub_return_locations is past the end of the program, so
+            # if we call a subroutine as, say, part of Timer.Tick, the subroutine ending will terminate that
+            # particular thread.
             self.line_number = self.sub_return_locations.pop()
 
         elif isinstance(statement, ast.IfStatement):
@@ -363,6 +317,11 @@ class InterpreterThread(threading.Thread):
         elif isinstance(statement, ast.EndWhileStatement):
             # Jump back to the While
             self.line_number = self.statements.index(statement.jump_target)-1
+
+        elif isinstance(statement, ast.LabelDefinition): pass  # all labels were parsed earlier
+
+        elif isinstance(statement, ast.GotoStatement):
+            self.line_number = self.statements.index(statement.jump_target)
 
         else:
             raise NotImplementedError(repr(statement))

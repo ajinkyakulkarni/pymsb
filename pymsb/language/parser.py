@@ -31,6 +31,10 @@ class Parser:
             # We didn't close our code blocks
             # TODO: give detailed output of what we're missing
             raise errors.PyMsbExpectedExpressionError(self.line_number, "Missing the closing for " + repr(self.open_code_block_asts[-1]))
+
+        # Perform checks and processing for labels
+        self.__scan_for_labels_and_subroutines(asts)
+
         return asts
 
     def tokenize(self, line, include_comments=False):
@@ -289,11 +293,16 @@ class Parser:
 
         if kw_token.token_type == "EndSub":
             self.__get_token(1, None)
-            answer = ast.EndSubStatement(self.line_number)
-            return answer
+            assert_open_code_block("Sub")
+            self.open_code_block_asts.pop()
+            return ast.EndSubStatement(self.line_number)
 
         # ==========================================================================================
         # GOTO
+        if kw_token.token_type == "Goto":
+            label_name = self.__get_token(1, MsbToken.SYMBOL).value
+            self.__get_token(2, None)
+            return ast.GotoStatement(self.line_number, label_name)
 
     def __parse_tokens(self, tokens):
         if not tokens:
@@ -368,6 +377,47 @@ class Parser:
         # We shouldn't have this part because of self.get_token(self.tokens,  parameter restrictions
         else:
             raise errors.PyMsbUnrecognizedStatementError(self.line_number, 0)
+
+    def __scan_for_labels_and_subroutines(self, asts):
+        # This scans for duplicate/missing definitions and stores the line numbers of labels and subroutines.
+        label_asts = dict()
+        sub_asts = dict()
+
+        # Save label/sub locations
+        for line_num, stmt_ast in enumerate(asts):
+            if isinstance(stmt_ast, ast.LabelDefinition):
+                name = stmt_ast.label_name
+                if name in label_asts:
+                    raise errors.PyMsbSyntaxError(line_num, 0,
+                                                  "Another Label exists with the same name '{0}'.".format(name))
+                else:
+                    label_asts[name] = stmt_ast
+
+            if isinstance(stmt_ast, ast.SubStatement):
+                name = stmt_ast.sub_name
+                if name in sub_asts:
+                    raise errors.PyMsbSyntaxError(line_num, 0,
+                                                  "Another Subroutine exists with the same name '{0}'.".format(name))
+                else:
+                    sub_asts[name] = stmt_ast
+
+        # Check gotos and sub calls
+        for line_num, stmt_ast in enumerate(asts):
+            if isinstance(stmt_ast, ast.GotoStatement):
+                name = stmt_ast.label_name
+                if name not in label_asts:
+                    raise errors.PyMsbSyntaxError(line_num, 0,
+                                                  "Cannot find label '{0}' used in Goto statement.".format(name))
+                else:
+                    stmt_ast.jump_target = label_asts[name]
+
+            if isinstance(stmt_ast, ast.SubroutineCall):
+                name = stmt_ast.name
+                if name not in sub_asts:
+                    raise errors.PyMsbSyntaxError(line_num, 0,
+                                                  "Subroutine '{0}' is not defined.".format(name))
+                else:
+                    stmt_ast.jump_target = sub_asts[name]
 
 
 class MsbToken:

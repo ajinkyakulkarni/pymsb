@@ -97,8 +97,32 @@ if __name__ == "__main__":
     endwhile
     """
 
+    goto_and_sub_test = """
+    ' I know this is a disgusting language feature
+    Sub sayhi
+      TextWindow.WriteLine("Hello world!")
+    endsub
+    start:
+    sayhi()
+    counter = 1
+    five_factorial = 1
+    loop:
+    if counter <= 5 then
+      five_factorial = five_factorial * counter
+      counter = counter + 1
+      goto loop
+    endif
+    goto end
+    TextWindow.WriteLine("shouldn't print this line")
+    end:
+    TextWindow.WriteLine("5! = " + five_factorial)
+    sayhi()
+    TextWindow.WriteLine("All done!")
+    """
+
     interpreter = Interpreter()
     # interpreter.run(window_and_cursor_test)
     # interpreter.run(sub_input_if_test)
     # interpreter.run(for_test)
-    interpreter.run(while_test)
+    # interpreter.run(while_test)
+    interpreter.run(goto_and_sub_test)
