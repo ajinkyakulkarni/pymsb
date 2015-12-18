@@ -340,8 +340,7 @@ class InterpreterThread(threading.Thread):
             self.interpreter.assign(statement.var_ast, statement.lower_expr)
             if self.interpreter.evaluate_comparison(">", statement.var_ast, statement.upper_expr) == "True":
                 print("var: " + repr(statement.var_ast) + " is greater than " + repr(statement.upper_expr))
-                while self.statements[self.line_number] != statement.jump_target:
-                    self.line_number += 1
+                self.line_number = self.statements.index(statement.jump_target)
 
         elif isinstance(statement, ast.EndForStatement):
             # When we reach EndForStatement, we always increment the variable.
@@ -353,6 +352,17 @@ class InterpreterThread(threading.Thread):
                 pass
             else:
                 self.line_number = self.statements.index(for_ast)  # line number gets incremented again after
+
+        elif isinstance(statement, ast.WhileStatement):
+            # If the expression evaluates to "true", continue execution, otherwise skip past EndWhile
+            if self.interpreter.evaluate_comparison_ast(statement.condition_expr).lower() == "true":
+                pass
+            else:
+                self.line_number = self.statements.index(statement.jump_target)
+
+        elif isinstance(statement, ast.EndWhileStatement):
+            # Jump back to the While
+            self.line_number = self.statements.index(statement.jump_target)-1
 
         else:
             raise NotImplementedError(repr(statement))

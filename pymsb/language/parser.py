@@ -264,11 +264,18 @@ class Parser:
         # WHILE
         if kw_token.token_type == "While":
             self.token_index += 1
-            conditional_expr = self.__parse_expr()
-            return ast.WhileStatement(self.line_number, conditional_expr)
+            conditional_expr = self.__parse_expr(allow_comparators=True)
+            answer = ast.WhileStatement(self.line_number, conditional_expr)
+            self.open_code_block_asts.append(answer)
+            return answer
 
         if kw_token.token_type == "EndWhile":
-            return ast.EndWhileStatement(self.line_number)
+            assert_open_code_block("While")
+            answer = ast.EndWhileStatement(self.line_number)
+            while_ast = self.open_code_block_asts.pop()
+            while_ast.jump_target = answer
+            answer.jump_target = while_ast
+            return answer
 
         # ==========================================================================================
         # SUB

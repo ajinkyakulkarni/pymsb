@@ -90,7 +90,15 @@ if __name__ == "__main__":
     endfor
     """
 
+    while_test = """
+    Textwindow.writeline("Keep writing 'okay' please.")
+    while TextWindow.Read() = "okay"
+        TextWindow.WriteLine("Yay")
+    endwhile
+    """
+
     interpreter = Interpreter()
     # interpreter.run(window_and_cursor_test)
     # interpreter.run(sub_input_if_test)
-    interpreter.run(for_test)
+    # interpreter.run(for_test)
+    interpreter.run(while_test)
