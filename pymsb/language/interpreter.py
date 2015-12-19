@@ -210,9 +210,6 @@ class Environment:
     def get_variable(self, var):
         return self.variable_bindings.setdefault(var.lower(), "")
 
-    def is_array(self, var):
-        return False  # TODO: implement Environment.is_array
-
 
 class InterpreterThread(threading.Thread):
     def __init__(self, interpreter, line_number):

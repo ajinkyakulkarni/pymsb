@@ -78,4 +78,17 @@
             <event name="TextInput"/>
         </events>
     </object>
+
+    <object name="Array">
+        <methods>
+            <method name="ContainsIndex" num_args="2" returns_value="1"/>
+            <method name="ContainsValue" num_args="2" returns_value="1"/>
+            <method name="GetAllIndices" num_args="1" returns_value="1"/>
+            <method name="GetItemCount" num_args="1" returns_value="1"/>
+            <method name="GetValue" num_args="1" returns_value="1"/>
+            <method name="IsArray" num_args="1" returns_value="1"/>
+            <method name="RemoveValue" num_args="1" returns_value="1"/>
+            <method name="SetValue" num_args="1" returns_value="1"/>
+        </methods>
+    </object>
 </builtins>
