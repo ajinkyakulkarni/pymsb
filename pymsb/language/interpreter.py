@@ -30,6 +30,7 @@ class Interpreter:
         self.tk_root = tk.Tk()
         self.tk_root.withdraw()
         self.msb_objects = {
+            "Clock": Clock(),
             "TextWindow": TextWindow(self, self.tk_root),
             "GraphicsWindow": GraphicsWindow(self, self.tk_root)
         }

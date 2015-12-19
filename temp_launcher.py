@@ -120,9 +120,25 @@ if __name__ == "__main__":
     TextWindow.WriteLine("All done!")
     """
 
+    clock_test = """
+    TextWindow.WriteLine(Clock.Date)
+    TextWindow.WriteLine(Clock.Day)
+    TextWindow.WriteLine(Clock.ElapsedMilliseconds)
+    TextWindow.WriteLine(Clock.Hour)
+    TextWindow.WriteLine(Clock.Millisecond)
+    TextWindow.WriteLine(Clock.Minute)
+    TextWindow.WriteLine(Clock.Month)
+    TextWindow.WriteLine(Clock.Second)
+    TextWindow.WriteLine(Clock.Time)
+    TextWindow.WriteLine(Clock.WeekDay)
+    TextWindow.WriteLine(Clock.Year)
+    """
+
+
     interpreter = Interpreter()
     # interpreter.run(window_and_cursor_test)
     # interpreter.run(sub_input_if_test)
     # interpreter.run(for_test)
     # interpreter.run(while_test)
-    interpreter.run(goto_and_sub_test)
+    # interpreter.run(goto_and_sub_test)
+    interpreter.run(clock_test)

@@ -78,4 +78,19 @@
             <event name="TextInput"/>
         </events>
     </object>
+    <object name="Clock">
+        <fields>
+            <field name="Date" readonly="1"/>
+            <field name="Day" readonly="1"/>
+            <field name="ElapsedMilliseconds" readonly="1"/>
+            <field name="Hour" readonly="1"/>
+            <field name="Millisecond" readonly="1"/>
+            <field name="Minute" readonly="1"/>
+            <field name="Month" readonly="1"/>
+            <field name="Second" readonly="1"/>
+            <field name="Time" readonly="1"/>
+            <field name="WeekDay" readonly="1"/>
+            <field name="Year" readonly="1"/>
+        </fields>
+    </object>
 </builtins>
