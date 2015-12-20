@@ -7,13 +7,14 @@ import time
 
 import pymsb.language.abstractsyntaxtrees as ast
 import pymsb.language.errors as errors
-from pymsb.language.modules import *
+import pymsb.language.modules as modules
 from pymsb.language.parser import Parser
 
 
 # TODO: address the following differences between MS Small Basic and Py_MSB:
 # Storage of decimals/floats + precision level + what precision is based on (string length, actual bits)
 # Setting invalid cursor locations; in MSB, this crashes the program
+# When a number is represented with or without a decimal point
 
 # TODO: check if we're having blank/comment lines screwing up our line numbers between parser, interpreter
 
@@ -30,9 +31,10 @@ class Interpreter:
         self.tk_root = tk.Tk()
         self.tk_root.withdraw()
         self.msb_objects = {
-            "Clock": Clock(),
-            "TextWindow": TextWindow(self, self.tk_root),
-            "GraphicsWindow": GraphicsWindow(self, self.tk_root)
+            "Clock": modules.Clock(),
+            "Math": modules.Math(),
+            "TextWindow": modules.TextWindow(self, self.tk_root),
+            "GraphicsWindow": modules.GraphicsWindow(self, self.tk_root)
         }
 
         self.threads = []
@@ -74,7 +76,7 @@ class Interpreter:
 
         if isinstance(destination_ast, ast.MsbObjectField):
             # Check if this is a field or an event
-            if utilities.msb_event_exists(destination_ast.msb_object,
+            if modules.utilities.msb_event_exists(destination_ast.msb_object,
                                           destination_ast.msb_object_field_name):
                 # Must be assigning to a subroutine
                 sub_name = value_ast.variable_name
@@ -129,18 +131,18 @@ class Interpreter:
 
     def execute_function_call(self, obj_name, fn_name, arg_asts):
         arg_vals = [self.evaluate_expression_ast(arg_ast) for arg_ast in arg_asts]
-        fn = getattr(self.msb_objects[utilities.capitalize(obj_name)], utilities.capitalize(fn_name))
+        fn = getattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(fn_name))
         return fn.__call__(*arg_vals)
 
     def evaluate_object_field(self, obj_name, field_name):
-        return getattr(self.msb_objects[utilities.capitalize(obj_name)], utilities.capitalize(field_name))
+        return getattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name))
 
     def assign_msb_object_field(self, obj_name, field_name, arg_value):
-        setattr(self.msb_objects[utilities.capitalize(obj_name)], utilities.capitalize(field_name), arg_value)
+        setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name), arg_value)
 
     def assign_msb_event(self, obj_name, event_name, sub_name):
         # TODO: implement the event things
-        setattr(self.msb_objects[utilities.capitalize(obj_name)], utilities.capitalize(event_name), sub_name)
+        setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(event_name), sub_name)
 
     @staticmethod
     def convert_string_value(x, force_numeric):

@@ -134,6 +134,16 @@ if __name__ == "__main__":
     TextWindow.WriteLine(Clock.Year)
     """
 
+    math_test = """
+    TextWindow.WriteLine("Arctan of " + Math.Pi + " is " + Math.ArcTan(Math.Pi))
+    deg_ang = 60
+    TextWindow.WriteLine("In degrees, the angle is " + deg_ang)
+    rad_ang = Math.GetRadians(deg_ang)
+    TextWindow.WriteLine("In radians, the angle is " + rad_ang)
+    TextWindow.WriteLine("The sine is " + Math.Sin(rad_ang))
+    TextWindow.WriteLine("The arcsine of the sine is " + Math.ArcSin(Math.Sin(rad_ang)))
+    TextWindow.WriteLine("The arcsine of the sine in degrees is " + Math.GetDegrees(Math.ArcSin(Math.Sin(rad_ang))))
+    """
 
     interpreter = Interpreter()
     # interpreter.run(window_and_cursor_test)
@@ -141,4 +151,5 @@ if __name__ == "__main__":
     # interpreter.run(for_test)
     # interpreter.run(while_test)
     # interpreter.run(goto_and_sub_test)
-    interpreter.run(clock_test)
+    # interpreter.run(clock_test)
+    interpreter.run(math_test)

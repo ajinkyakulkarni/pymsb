@@ -93,4 +93,31 @@
             <field name="Year" readonly="1"/>
         </fields>
     </object>
+    <object name="Math">
+        <fields>
+            <field name="Pi" readonly="1"/>
+        </fields>
+        <methods>
+            <method name="Abs" num_args="1"/>
+            <method name="ArcCos" num_args="1"/>
+            <method name="ArcSin" num_args="1"/>
+            <method name="ArcTan" num_args="1"/>
+            <method name="Ceiling" num_args="1"/>
+            <method name="Cos" num_args="1"/>
+            <method name="Floor" num_args="1"/>
+            <method name="GetDegrees" num_args="1"/>
+            <method name="GetRadians" num_args="1"/>
+            <method name="GetRandomNumber" num_args="1"/>
+            <method name="Log" num_args="1"/>
+            <method name="Max" num_args="2"/>
+            <method name="Min" num_args="2"/>
+            <method name="NaturalLog" num_args="1"/>
+            <method name="Power" num_args="2"/>
+            <method name="Remainder" num_args="2"/>
+            <method name="Round" num_args="1"/>
+            <method name="Sin" num_args="1"/>
+            <method name="SquareRoot" num_args="1"/>
+            <method name="Tan" num_args="1"/>
+        </methods>
+    </object>
 </builtins>
