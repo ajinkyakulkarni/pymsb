@@ -88,7 +88,8 @@ class TextWindow(PyMsbWindow):
 
     def prepare_color_tags(self):
         # Prepare all the color tags for text
-        for name, val in py_msb_utils.COLOR_TRANSLATION.items():
+        for name, val in py_msb_utils.color_parser["TextWindow"].items():
+            name = py_msb_utils.capitalize_text_color(name)
             self.text_box.tag_configure("foreground_" + name, foreground=val)
             self.text_box.tag_configure("background_" + name, background=val)
             self.text_box.tag_configure("output")
@@ -121,18 +122,19 @@ class TextWindow(PyMsbWindow):
 
     @BackgroundColor.setter
     def BackgroundColor(self, background_color):
-        if background_color in py_msb_utils.COLOR_TRANSLATION:
-            self.__background_color = background_color
+        self.__background_color = py_msb_utils.translate_textwindow_color(background_color, "#000000")
 
     @property
     def ForegroundColor(self):
-        return self.__foreground_color
+        code = self.text_box["insertbackground"].upper()
+        for key, val in py_msb_utils.color_parser["TextWindow"].items():
+            if code == val:
+                return py_msb_utils.capitalize_text_color(key)
 
     @ForegroundColor.setter
     def ForegroundColor(self, foreground_color):
-        if foreground_color in py_msb_utils.COLOR_TRANSLATION:
-            self.__foreground_color = foreground_color
-            self.text_box.config(insertbackground=py_msb_utils.COLOR_TRANSLATION[foreground_color])
+        gray = py_msb_utils.translate_textwindow_color("Gray", None)
+        self.text_box["insertbackground"] = py_msb_utils.translate_textwindow_color(foreground_color, gray)
 
     @property
     def CursorLeft(self):
@@ -208,13 +210,10 @@ class TextWindow(PyMsbWindow):
         while True:
             self.current_input_mode = TextWindow.NUMERICAL
             user_input = self.Read()
-            try:
-                return str(int(user_input))
-            except (ValueError, OverflowError):
-                try:
-                    return str(float(user_input))  # this allows values like "inf" and other junk through
-                except ValueError:
-                    continue
+            converted = py_msb_utils.numericize(user_input, False)
+            if isinstance(converted, str):  # wasn't a numeric input
+                continue
+            return str(converted)
 
     # noinspection PyMethodMayBeStatic
     def Show(self):

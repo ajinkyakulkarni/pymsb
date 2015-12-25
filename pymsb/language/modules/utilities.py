@@ -1,19 +1,7 @@
 import xml.etree.ElementTree as ET
 import itertools
 import pkg_resources
-
-# Colors  TODO: add the actual colors, and find out what's going on with the MSB documentation on colors
-COLOR_TRANSLATION = {
-    "black": "#000000",
-    "blue": "#0000FF",
-    "cyan": "#00FFFF",
-    "gray": "#888888",
-    "green": "#00FF00",
-    "magenta": "#FF00FF",
-    "red": "#FF0000",
-    "white": "#FFFFFF",
-    "yellow": "#FFFF00"
-}
+from configparser import ConfigParser, ExtendedInterpolation
 
 # Load list of built-in methods, fields, events
 # TODO: worry about what variables are being exported
@@ -34,7 +22,7 @@ for child in root:
     if f is not None:
         for field in f:
             name = field.get("name")
-            readonly = bool(field.get("readonly", False))  # if readonly is any non-empty string, then considered read-only
+            readonly = bool(field.get("readonly", False))  # if readonly is any non-empty string, then is read-only
             obj_info["fields"][name] = readonly
     e = child.find("events")
     if e is not None:
@@ -42,7 +30,14 @@ for child in root:
             obj_info["events"].add(event.get("name"))
     obj_infos[child.get("name")] = obj_info
 
+# Load named colours
+color_parser = ConfigParser(interpolation=ExtendedInterpolation(), comment_prefixes=("//",))
+color_parser.read(pkg_resources.resource_filename(__name__, "colors.ini"))
+text_colors = color_parser["TextWindow"]
+graphic_colors = color_parser["GraphicWindow"]
 
+
+# Helper functions
 def get_msb_method_args(obj_name, method_name):
     for o_name, info in obj_infos.items():
         if o_name.lower() == obj_name.lower():
@@ -80,3 +75,54 @@ def capitalize(msb_name):
             if name.lower() == msb_name.lower():
                 return name
     return None
+
+
+# TODO: replace the current etest with an adequately restrictive one
+def numericize(number_str, force_numeric=True):
+    '''
+    :param number_str: A string that may or may not contain a numeric value
+    :param force_numeric: Whether to return 0.0 or the given string itself in the case of failed conversion
+    :return: The conversion of the given string to a float, or if not convertible, then either 0.0 or the string itself
+             depending on the value of force_numeric.
+    '''
+    try:
+        int(float(number_str))
+        return float(number_str)
+    except:
+        if force_numeric:
+            return 0.0
+        else:
+            return number_str
+
+
+def capitalize_text_color(n):
+    if n.startswith("dark"):
+        return "Dark" + n[4:].capitalize()
+    return n.capitalize()
+
+
+def translate_textwindow_color(col, default_color):
+    '''
+    :param col: The name of a named color (e.g. "white" or "black"), or a string containing an index of a textwindow
+                named color (e.g. "0" or 1)
+    :return: The name of a named color corresponding to the given index or name, or default_color if invalid.
+    '''
+    try:
+        return list(color_parser["TextWindow"].values())[int(float(col))]
+    except IndexError:
+        return default_color
+    except ValueError:
+        try:
+            return color_parser["TextWindow"][col.lower()].lower()
+        except KeyError:
+            return default_color
+    return default_color
+
+
+def translate_color(col):
+    '''
+    :param col: The name of a named color (e.g. "white" or "Crimson"), or a hex color code
+    :return: A hex color code (e.g. "#FF00FF") corresponding to the name/code if valid, or "#000000" otherwise.
+    '''
+    raise NotImplementedError()
+

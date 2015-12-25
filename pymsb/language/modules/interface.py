@@ -5,6 +5,7 @@ import time
 __author__ = 'Simon Tang'
 
 
+# noinspection PyPep8Naming
 class PyMsbWindow:
     def __init__(self, interpreter, root):
         self.interpreter = interpreter
@@ -71,6 +72,8 @@ class PyMsbWindow:
             int(kwargs.get("left", self.Left)),
             int(kwargs.get("top", self.Top))
         ))
+        # The window geometry isn't updated immediately
+        self.window.update_idletasks()
 
     def show(self):
         if not self.window.winfo_viewable():

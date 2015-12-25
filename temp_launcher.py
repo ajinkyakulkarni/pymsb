@@ -145,11 +145,31 @@ if __name__ == "__main__":
     TextWindow.WriteLine("The arcsine of the sine in degrees is " + Math.GetDegrees(Math.ArcSin(Math.Sin(rad_ang))))
     """
 
+    graphics_test_basic = """
+    textwindow.foregroundcolor = "darkgreen"
+    textwindow.backgroundcolor = "green"
+    GraphicsWindow.Show()
+    GraphicsWindow.Title = "A Graphics Window"
+    GraphicsWindow.BackgroundColor = "Cyan"
+    TextWindow.writeline(GraphicsWindow.GetColorFromRGB(266,100,-1))
+'    GraphicsWindow.ShowMessage("Hello text", "Hello title")
+
+    textwindow.hide()
+    graphicswindow.drawline(100,100,200,200)
+    textwindow.writeline("width: " + graphicswindow.width + ", height: " + graphicswindow.height)
+'    graphicswindow.width = 5
+    graphicswindow.width = 800
+    textwindow.writeline("width: " + graphicswindow.width + ", height: " + graphicswindow.height)
+    graphicswindow.height = 800
+    textwindow.writeline("width: " + graphicswindow.width + ", height: " + graphicswindow.height)
+    """
+
+    textwindow_colors_test = """
+    For i = 0 to 15
+        TextWindow.ForegroundColor = i
+        TextWindow.WriteLine(TextWindow.ForegroundColor)
+    EndFor
+    """
+
     interpreter = Interpreter()
-    # interpreter.run(window_and_cursor_test)
-    # interpreter.run(sub_input_if_test)
-    # interpreter.run(for_test)
-    # interpreter.run(while_test)
-    # interpreter.run(goto_and_sub_test)
-    # interpreter.run(clock_test)
-    interpreter.run(math_test)
+    interpreter.run(textwindow_colors_test)

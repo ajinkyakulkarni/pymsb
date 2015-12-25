@@ -42,7 +42,7 @@ class Interpreter:
     def run(self, code):
         self.__init_tk()
 
-        self.statements = self.parser.parse(code + "\nTextWindow.Write(\"For now, use the close button to exit\")")
+        self.statements = self.parser.parse(code)
         self.scan_code()
 
         self.tk_root.after(1, self.start_main_thread)
@@ -144,20 +144,6 @@ class Interpreter:
         # TODO: implement the event things
         setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(event_name), sub_name)
 
-    @staticmethod
-    def convert_string_value(x, force_numeric):
-        try:
-            return int(x)
-        except (ValueError, OverflowError):
-            # TODO: Check if it's a "normal" base-10 number otherwise return the string if +, return 0 if not +
-            try:
-                # FIXME: implement better checks so we don't accept the fancy floats like "inf"
-                return float(x)
-            except ValueError:
-                if force_numeric:
-                    return 0
-                return x
-
     def evaluate_comparison(self, comp, left, right):
         # returns "True" or "False" - VERY IMPORTANT NOTE: returns the strings and not boolean values.
         # possible comp values are strings "<=", ">=", "<", ">", "<>", "="
@@ -171,8 +157,8 @@ class Interpreter:
             return str(left != right)
 
         # At this point, anything that is non-numerical is treated like 0
-        left = self.convert_string_value(left, True)
-        right = self.convert_string_value(right, True)
+        left = modules.utilities.numericize(left, True)
+        right = modules.utilities.numericize(right, True)
 
         return str(((comp == "<" and left < right) or
                     (comp == "<=" and left <= right) or
@@ -184,10 +170,10 @@ class Interpreter:
         # left, right are expression asts
         left = self.evaluate_expression_ast(left)
         if isinstance(left, str):
-            left = self.convert_string_value(left, op != "+")
+            left = modules.utilities.numericize(left, op != "+")
         right = self.evaluate_expression_ast(right)
         if isinstance(right, str):
-            right = self.convert_string_value(right, op != "+")
+            right = modules.utilities.numericize(right, op != "+")
 
         if op == "+":
             try:
