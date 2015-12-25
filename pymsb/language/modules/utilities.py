@@ -31,7 +31,7 @@ for child in root:
     obj_infos[child.get("name")] = obj_info
 
 # Load named colours
-color_parser = ConfigParser(interpolation=ExtendedInterpolation(), comment_prefixes=("//",))
+color_parser = ConfigParser(interpolation=ExtendedInterpolation(), comment_prefixes=(";",))
 color_parser.read(pkg_resources.resource_filename(__name__, "colors.ini"))
 text_colors = color_parser["TextWindow"]
 graphic_colors = color_parser["GraphicWindow"]

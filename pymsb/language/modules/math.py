@@ -1,5 +1,6 @@
 import math
 import random
+import pymsb.language.modules
 
 # TODO: find the differences in precision with original MSB?
 
@@ -8,17 +9,8 @@ class Math:
     pass
 
 
-def conv(val):
-    # TODO: implement the less permissive float conversion
-    # noinspection PyBroadException
-    try:
-        return float(val)
-    except:
-        return 0
-
-
 def math_wrapper(func):
-    return lambda self, *args: str(func(*(map(conv, args))))
+    return lambda self, *args: str(func(*(map(pymsb.language.modules.utilities.numericize, args))))
 
 
 Math.ArcCos = math_wrapper(math.acos)
