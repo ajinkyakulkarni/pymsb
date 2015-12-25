@@ -118,11 +118,14 @@ class TextWindow(PyMsbWindow):
 
     @property
     def BackgroundColor(self):
-        return self.__background_color
+        code = self.__background_color
+        for key, val in py_msb_utils.color_parser["TextWindow"].items():
+            if code == val:
+                return py_msb_utils.capitalize_text_color(key)
 
     @BackgroundColor.setter
     def BackgroundColor(self, background_color):
-        self.__background_color = py_msb_utils.translate_textwindow_color(background_color, "#000000")
+        self.__background_color = py_msb_utils.translate_textwindow_color(background_color, "#000000").upper()
 
     @property
     def ForegroundColor(self):
@@ -134,7 +137,7 @@ class TextWindow(PyMsbWindow):
     @ForegroundColor.setter
     def ForegroundColor(self, foreground_color):
         gray = py_msb_utils.translate_textwindow_color("Gray", None)
-        self.text_box["insertbackground"] = py_msb_utils.translate_textwindow_color(foreground_color, gray)
+        self.text_box["insertbackground"] = py_msb_utils.translate_textwindow_color(foreground_color, gray).upper()
 
     @property
     def CursorLeft(self):

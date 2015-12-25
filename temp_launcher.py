@@ -148,11 +148,13 @@ if __name__ == "__main__":
     graphics_test_basic = """
     textwindow.foregroundcolor = "darkgreen"
     textwindow.backgroundcolor = "green"
+    textwindow.writeline(textwindow.foregroundcolor)
+    textwindow.writeline(textwindow.backgroundcolor)
     GraphicsWindow.Show()
     GraphicsWindow.Title = "A Graphics Window"
     GraphicsWindow.BackgroundColor = "Cyan"
     TextWindow.writeline(GraphicsWindow.GetColorFromRGB(266,100,-1))
-'    GraphicsWindow.ShowMessage("Hello text", "Hello title")
+    GraphicsWindow.ShowMessage("Hello text", "Hello title")
 
     textwindow.hide()
     graphicswindow.drawline(100,100,200,200)
@@ -172,4 +174,4 @@ if __name__ == "__main__":
     """
 
     interpreter = Interpreter()
-    interpreter.run(textwindow_colors_test)
+    interpreter.run(graphics_test_basic)
