@@ -1,0 +1,16 @@
+GraphicsWindow.BrushColor = "#00ccddee"
+GraphicsWindow.FillRectangle(10,10,100,100)
+
+GraphicsWindow.BrushColor = "#ddaaee00"
+GraphicsWindow.FillRectangle(40,40,100,100)
+
+GraphicsWindow.BrushColor = "#ffff0000"
+GraphicsWindow.FillRectangle(80,80,100,100)
+
+GraphicsWindow.BrushColor = "#ddaaee00"
+GraphicsWindow.FillRectangle(100,100,100,100)
+
+GraphicsWindow.BrushColor = "#223f223f"
+GraphicsWindow.FillRectangle(120,120,100,100)
+
+gr.a = 3
