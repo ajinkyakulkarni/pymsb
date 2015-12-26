@@ -44,10 +44,10 @@ class Interpreter:
         self.__init_tk()
 
         self.statements = self.parser.parse(code)
-        self.scan_code()
-
-        self.tk_root.after(1, self.start_main_thread)
-        self.tk_root.mainloop()
+        if self.statements:
+            self.scan_code()
+            self.tk_root.after(1, self.start_main_thread)
+            self.tk_root.mainloop()
         self.exit()
 
     def scan_code(self):
@@ -166,6 +166,7 @@ class Interpreter:
                     (comp == ">" and left > right) or
                     (comp == ">=" and left >= right)))
 
+    # FIXME: fix this so ("x is " + "00") returns "x is 00" and not "x is 0"
     def evaluate_operation(self, op, left, right):
         # op is "+", "-", "*" or "/"
         # left, right are expression asts
@@ -178,7 +179,7 @@ class Interpreter:
 
         if op == "+":
             try:
-                return left + right
+                return str(left + right)
             except TypeError:
                 return str(left) + str(right)
 

@@ -34,7 +34,7 @@ class PyMsbExpectedExpressionError(PyMsbSyntaxError):
 
 class PyMsbUnrecognizedStatementError(PyMsbSyntaxError):
     def __init__(self, line_number, line_index):
-        super().__init__(line_number, line_index)
+        super().__init__(line_number, line_index, "Unrecognized statement encountered.")
 
 
 class PyMsbRuntimeError(RuntimeError):

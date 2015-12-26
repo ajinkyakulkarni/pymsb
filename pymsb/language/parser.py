@@ -2,6 +2,7 @@ from collections import OrderedDict
 from queue import LifoQueue
 from pymsb.language import abstractsyntaxtrees as ast
 import pymsb.language.errors as errors
+from pymsb.language.modules import utilities
 import re
 
 
@@ -17,12 +18,13 @@ class Parser:
         # This keeps track of what code blocks are "open" right now in the current part of the code
         # noinspection PyAttributeOutsideInit
         self.open_code_block_asts = []
-
-        for self.line_number, self.line in enumerate(code.splitlines()):
+        error_list = []
+        lines = code.splitlines()
+        for self.line_number, self.line in enumerate(lines):
             try:
                 ast = self.__parse_tokens(self.tokenize(self.line))
             except errors.PyMsbSyntaxError as e:
-                print(self.line, "\n\t\t", e, "\n")
+                error_list.append(e)
                 continue
             if ast:
                 asts.append(ast)
@@ -30,12 +32,22 @@ class Parser:
         if self.open_code_block_asts:
             # We didn't close our code blocks
             # TODO: give detailed output of what we're missing
-            raise errors.PyMsbExpectedExpressionError(self.line_number, "Missing the closing for " + repr(self.open_code_block_asts[-1]))
+            message = "Missing the closing for " + repr(self.open_code_block_asts[-1])
+            error_list.append(errors.PyMsbExpectedExpressionError(self.line_number, message))
 
         # Perform checks and processing for labels
-        self.__scan_for_labels_and_subroutines(asts)
+        try:
+            self.__scan_for_labels_and_subroutines(asts)
+        except errors.PyMsbSyntaxError as e:
+            error_list.append(e)
 
-        return asts
+        for error in error_list:
+            print(lines[error.line_number])
+            print(' '*error.line_index + '^')
+            print("\t", error, "\n")
+        if not error_list:
+            return asts
+        return None
 
     def tokenize(self, line, include_comments=False):
         # Takes a single line of MSB and generates a list of self.tokens.  TODO: docstrings
