@@ -33,7 +33,7 @@ class Assignment(Statement):
 
         if isinstance(var, MsbObjectField):
             # Check for read-only status
-            if var.readonly:
+            if var.read_only:
                 raise errors.PyMsbSyntaxError(
                     "The property '{0}' in '{1}' is read-only and cannot be assigned a value."
                     .format(var.msb_object_field_name, var.msb_object))
@@ -81,17 +81,12 @@ class UserVariableArrayAccess:
 class MsbObjectField:
     """ An AST representing a reference to a built-in Microsoft Small Basic object field.
     """
-
-    def __init__(self, msb_object, msb_object_field_name):
+    # TODO: implement the read-only check
+    def __init__(self, msb_object, msb_object_field_name, read_only=False):
         super().__init__()
         self.msb_object = msb_object
         self.msb_object_field_name = msb_object_field_name
-
-        # Check for existence of field
-        self.readonly = utilities.get_msb_field_readonly(msb_object, msb_object_field_name)
-        if self.readonly is None:
-            raise errors.PyMsbRuntimeError(
-                "Cannot find property '{0}' in '{1}".format(msb_object_field_name, msb_object))
+        self.read_only = read_only
 
     def __repr__(self):
         return "MsbObjectField<{0}.{1}>".format(self.msb_object, self.msb_object_field_name)
