@@ -1,6 +1,6 @@
 import re
 import tkinter as tk
-import time
+from pymsb.language.modules import utilities
 
 __author__ = 'Simon Tang'
 
@@ -36,7 +36,7 @@ class PyMsbWindow:
 
     @Left.setter
     def Left(self, left):
-        self.set_geometry(left=left)
+        self.set_geometry(left=utilities.numericize(left, True))
 
     @property
     def Top(self):
@@ -44,7 +44,7 @@ class PyMsbWindow:
 
     @Top.setter
     def Top(self, top):
-        self.set_geometry(top=top)
+        self.set_geometry(top=utilities.numericize(top, True))
 
     @property
     def Width(self):  # although Width and Height are not available in TextWindow they are in GraphicsWindow
@@ -52,7 +52,7 @@ class PyMsbWindow:
 
     @Width.setter
     def Width(self, width):
-        self.set_geometry(width=width)
+        self.set_geometry(width=utilities.numericize(width, True))
 
     @property
     def Height(self):
@@ -60,7 +60,7 @@ class PyMsbWindow:
 
     @Height.setter
     def Height(self, height):
-        self.set_geometry(height=height)
+        self.set_geometry(height=utilities.numericize(height, True))
 
     def get_geometry(self):
         g = self.window.geometry()

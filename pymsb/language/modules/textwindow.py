@@ -59,7 +59,7 @@ class TextWindow(PyMsbWindow):
         # Customize with default values
         self.BackgroundColor = "black"
         self.ForegroundColor = "gray"
-        self.Title = "Small Basic Text Window"
+        self.window.title("Microsoft Small Basic Text Window")
 
         self.prepare_color_tags()
 
@@ -125,7 +125,11 @@ class TextWindow(PyMsbWindow):
 
     @BackgroundColor.setter
     def BackgroundColor(self, background_color):
-        self.__background_color = py_msb_utils.translate_textwindow_color(background_color, "#000000").upper()
+        try:
+            default = self.__background_color
+        except AttributeError:
+            default = "#000000"
+        self.__background_color = py_msb_utils.translate_textwindow_color(background_color, default).upper()
 
     @property
     def ForegroundColor(self):
@@ -136,8 +140,8 @@ class TextWindow(PyMsbWindow):
 
     @ForegroundColor.setter
     def ForegroundColor(self, foreground_color):
-        gray = py_msb_utils.translate_textwindow_color("Gray", None)
-        self.text_box["insertbackground"] = py_msb_utils.translate_textwindow_color(foreground_color, gray).upper()
+        current = self.text_box["insertbackground"].upper()
+        self.text_box["insertbackground"] = py_msb_utils.translate_textwindow_color(foreground_color, current).upper()
 
     @property
     def CursorLeft(self):
