@@ -9,6 +9,3 @@ class GraphicsWindow(PyMsbWindow):
         self.interpreter = interpreter
 
         self.Title = "Microsoft Small Basic Graphics Window"
-
-    def Show(self):
-        super().show()

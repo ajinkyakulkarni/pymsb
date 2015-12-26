@@ -173,5 +173,9 @@ if __name__ == "__main__":
     EndFor
     """
 
+    text_test = """
+    TextWindow.Title = Text.Append("10","10")
+    """
+
     interpreter = Interpreter()
-    interpreter.run(graphics_test_basic)
+    interpreter.run(text_test)

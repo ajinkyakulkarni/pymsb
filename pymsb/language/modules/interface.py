@@ -18,12 +18,16 @@ class PyMsbWindow:
         self.interpreter.exit()
         self.root.destroy()
 
+    def Show(self):
+        self.show()
+
     @property
     def Title(self):
         return self.window.title()
 
     @Title.setter
     def Title(self, title):
+        self.show()
         self.window.title(title)
 
     @property

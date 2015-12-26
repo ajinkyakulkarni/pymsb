@@ -34,7 +34,8 @@ class Interpreter:
             "Clock": modules.Clock(),
             "Math": modules.Math(),
             "TextWindow": modules.TextWindow(self, self.tk_root),
-            "GraphicsWindow": modules.GraphicsWindow(self, self.tk_root)
+            "GraphicsWindow": modules.GraphicsWindow(self, self.tk_root),
+            "Text": modules.Text(),
         }
 
         self.threads = []

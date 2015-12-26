@@ -120,4 +120,20 @@
             <method name="Tan" num_args="1"/>
         </methods>
     </object>
+    <object name="Text">
+        <methods>
+            <method name="Append" num_args="2"/>
+            <method name="ConvertToLowerCase" num_args="1"/>
+            <method name="ConvertToUpperCase" num_args="1"/>
+            <method name="EndsWith" num_args="2"/>
+            <method name="GetCharacter" num_args="1"/>
+            <method name="GetCharacterCode" num_args="1"/>
+            <method name="GetIndexOf" num_args="2"/>
+            <method name="GetLength" num_args="1"/>
+            <method name="GetSubText" num_args="3"/>
+            <method name="GetSubTextToEnd" num_args="2"/>
+            <method name="IsSubText" num_args="2"/>
+            <method name="StartsWith" num_args="2"/>
+        </methods>
+    </object>
 </builtins>

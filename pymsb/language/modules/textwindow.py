@@ -218,11 +218,6 @@ class TextWindow(PyMsbWindow):
                 continue
             return str(converted)
 
-    # noinspection PyMethodMayBeStatic
-    def Show(self):
-        """Make the TextWindow visible on the screen; if already visible, does nothing."""
-        super().show()
-
     def Write(self, contents):
         """Outputs the contents of the contents string to the TextWindow."""
         self.Show()
