@@ -21,6 +21,9 @@ class PyMsbWindow:
     def Show(self):
         self.show()
 
+    def Hide(self):
+        self.hide()
+
     @property
     def Title(self):
         return self.window.title()
@@ -82,13 +85,9 @@ class PyMsbWindow:
     def show(self):
         if not self.window.winfo_viewable():
             self.window.deiconify()
-            # noinspection PyAttributeOutsideInit
-            self.__is_visible = True
 
     def hide(self):
         self.window.withdraw()
-        # noinspection PyAttributeOutsideInit
-        self.__is_visible = False
 
     def is_visible(self):
-        return self.__is_visible
+        return self.window.winfo_viewable()

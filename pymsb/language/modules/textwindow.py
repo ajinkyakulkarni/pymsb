@@ -162,10 +162,6 @@ class TextWindow(PyMsbWindow):
     def Clear(self):
         self.text_box.delete("1.0", tk.END)
 
-    # noinspection PyMethodMayBeStatic
-    def Hide(self):
-        super().hide()
-
     def Pause(self, message="Press any key to continue..."):
         self.Show()
         self.current_input_mode = TextWindow.BLANK

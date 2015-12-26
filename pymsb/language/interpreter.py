@@ -57,6 +57,17 @@ class Interpreter:
         p = InterpreterThread(self, 0)
         self.threads.append(p)
         p.start()
+        self.tk_root.after(1, self.check_threads_finished)
+
+    def check_threads_finished(self):
+        for thread in self.threads[:]:
+            if not thread.is_alive():
+                self.threads.remove(thread)
+        if not self.threads:
+            if not (self.msb_objects["GraphicsWindow"].is_visible() or self.msb_objects["TextWindow"].is_visible()):
+                self.exit()
+        else:
+            self.tk_root.after(100, self.check_threads_finished)
 
     def exit(self):
         # TODO: add the logic regarding when to exit, when not to exit, and add TextWindow.PauseIfVisible() (I think?)
