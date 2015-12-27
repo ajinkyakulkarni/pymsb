@@ -165,7 +165,8 @@ class GraphicsWindow(PyMsbWindow):
 
     @utilities.numerical_args
     def DrawLine(self, x1, y1, x2, y2):
-        self.fill_shape(self.canvas.create_line, x1, y1, x2, y2, width=self.PenWidth, fill=self.PenColor)
+        self.fill_shape(self.canvas.create_line, x1, y1, x2, y2, width=self.PenWidth,
+                        fill=self.PenColor, alpha=self.__pen_alpha)
 
     @utilities.numerical_args
     def DrawRectangle(self, x, y, width, height):
@@ -237,13 +238,15 @@ class GraphicsWindow(PyMsbWindow):
                       outlinestipple=self.get_stipple(self.__pen_alpha),
                       outlineoffset=stipple_offset)
 
-    def fill_shape(self, fill_func, *coords, stipple_offset=tk.NW, width=0, fill=None):
+    def fill_shape(self, fill_func, *coords, stipple_offset=tk.NW, width=0, fill=None, alpha=None):
         self.Show()
         if not fill:
             fill = self.BrushColor
-        if fill > 0:
+        if not alpha:
+            alpha = self.__brush_alpha
+        if alpha > 0:
             fill_func(*coords, width=width, fill=fill,
-                      stipple=self.get_stipple(fill),
+                      stipple=self.get_stipple(alpha),
                       offset=stipple_offset)
 
     def get_stipple(self, alpha):
