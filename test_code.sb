@@ -1,4 +1,4 @@
-a = 2
+a = 3
 if a = 1 Then
     GraphicsWindow.BrushColor = "#00ccddee"
     GraphicsWindow.FillRectangle(10,10,100,100)
@@ -63,5 +63,35 @@ elseif a = 2 Then
     graphicswindow.drawboundtext(0, 100, 70, "The quick brown fox jumps over the lazy dog.")
 
     graphicswindow.drawtriangle(0,0,0,500,500,0)
+elseif a = 3 Then
+    graphicswindow.title = "side project"
+    graphicswindow.left = 300
+    graphicswindow.top = 300
+    graphicswindow.width = 500
+    graphicswindow.height = 500
+
+    graphicswindow.backgroundcolor = "cyan"
+
+    graphicswindow.pencolor = "magenta"
+    graphicswindow.fontsize = 10
+    graphicswindow.drawboundtext(10, 10, 400, "The snow glows white on the mountain tonight, JK LOL not a snowflake to be seen frown emoticon A weekend of precipitation, And it looks like 10 degrees.")
+
+    graphicswindow.brushcolor = "#EEFFFFFF"
+    graphicswindow.fillellipse(300,200,300,300)
+    graphicswindow.fillellipse(350,150,100,100)
+    graphicswindow.fillellipse(350,100,70,70)
+    graphicswindow.filltriangle(0, 500, 500, 500, 500, 400)
+
+    graphicswindow.brushcolor = "orange"
+    graphicswindow.filltriangle(300, 150, 370, 130, 390, 160)
+
+    graphicswindow.pencolor = "red"
+    graphicswindow.drawtext(360, 100, "(0)-(0)")
+
+    graphicswindow.pencolor = "transparent"
+    graphicswindow.drawtext(360, 100, "adsfasdfasdfasdf")
+
+    graphicswindow.showmessage("let it go", "let it go")
+
 Endif
 'GraphicsWindow.Hide()

@@ -180,8 +180,9 @@ class GraphicsWindow(PyMsbWindow):
         weight = "bold" if self.FontBold else "normal"
         slant = "italic" if self.FontItalic else "roman"
         font = tk.font.Font(root=self.root, family=self.FontName, size=self.FontSize, weight=weight,slant=slant)
-        self.canvas.create_text(x, y, text=text, justify=tk.LEFT, anchor=tk.NW, width=width,
-                                font=font, fill=self.PenColor, stipple=self.get_stipple(self.__pen_alpha))
+        if self.__pen_alpha > 0:
+            self.canvas.create_text(x, y, text=text, justify=tk.LEFT, anchor=tk.NW, width=width,
+                                    font=font, fill=self.PenColor, stipple=self.get_stipple(self.__pen_alpha))
 
     @utilities.numerical_args
     def DrawTriangle(self, x1, y1, x2, y2, x3, y3):
@@ -238,11 +239,11 @@ class GraphicsWindow(PyMsbWindow):
 
     def fill_shape(self, fill_func, *coords, stipple_offset=tk.NW, width=0, fill=None):
         self.Show()
-        if self.__brush_alpha > 0:
-            if not fill:
-                fill = self.BrushColor
+        if not fill:
+            fill = self.BrushColor
+        if fill > 0:
             fill_func(*coords, width=width, fill=fill,
-                      stipple=self.get_stipple(self.__brush_alpha),
+                      stipple=self.get_stipple(fill),
                       offset=stipple_offset)
 
     def get_stipple(self, alpha):
