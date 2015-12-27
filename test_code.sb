@@ -1,16 +1,67 @@
-GraphicsWindow.BrushColor = "#00ccddee"
-GraphicsWindow.FillRectangle(10,10,100,100)
+a = 2
+if a = 1 Then
+    GraphicsWindow.BrushColor = "#00ccddee"
+    GraphicsWindow.FillRectangle(10,10,100,100)
 
-GraphicsWindow.BrushColor = "#ddaaee00"
-GraphicsWindow.FillRectangle(40,40,100,100)
+    GraphicsWindow.BrushColor = "#ddaaee00"
+    GraphicsWindow.FillRectangle(40,40,100,100)
 
-GraphicsWindow.BrushColor = "#ffff0000"
-GraphicsWindow.FillRectangle(80,80,100,100)
+    GraphicsWindow.BrushColor = "#ffff0000"
+    GraphicsWindow.FillRectangle(80,80,100,100)
 
-GraphicsWindow.BrushColor = "#ddaaee00"
-GraphicsWindow.FillRectangle(100,100,100,100)
+    GraphicsWindow.BrushColor = "#ddaaee00"
+    GraphicsWindow.FillRectangle(100,100,100,100)
 
-GraphicsWindow.BrushColor = "#223f223f"
-GraphicsWindow.FillRectangle(120,120,100,100)
+    GraphicsWindow.BrushColor = "#223f223f"
+    GraphicsWindow.FillRectangle(120,120,100,100)
+elseif a = 2 Then
+    ' Corner rectangles
+    GraphicsWindow.PenColor = "red"
+    GraphicsWindow.BrushColor = "purple"
+    GraphicsWindow.PenWidth = 10
+    GraphicsWindow.DrawRectangle(10,10,100,100)
+    GraphicsWindow.PenColor = "green"
+    GraphicsWindow.PenWidth = 5
+    GraphicsWindow.DrawRectangle(10,10,100,100)
 
-gr.a = 3
+    ' Orange rectangle
+    graphicswindow.brushcolor = "orange"
+    graphicswindow.fillrectangle(170,150, 175, 75)
+
+    ' Tall purple oval
+    GraphicsWindow.BrushColor = "#EEFF00FF"
+    graphicswindow.fillellipse(100,0,100,400)
+
+    ' Corner purple circle
+    GraphicsWindow.DrawEllipse(10,10,100,100)
+    GraphicsWindow.FillEllipse(10,10,100,100)
+
+    ' Big green/yellow circle
+    GraphicsWindow.BrushColor = "#D0aabb00"
+    GraphicsWindow.DrawEllipse(31,31,260,260)
+    GraphicsWindow.FillEllipse(31,31,260,260)
+
+    ' Wide arc
+    GraphicsWindow.PenColor = "#99555511"
+    GraphicsWindow.DrawEllipse(0,0,1000,1000)
+
+    ' Fat line
+    graphicswindow.penwidth = 50
+    graphicswindow.pencolor = "#4a2f"
+    graphicswindow.drawline(10, 200, 700, 0)
+
+    graphicswindow.backgroundcolor = "cyan"
+    graphicswindow.height = graphicswindow.width * 2
+    graphicswindow.width = graphicswindow.height
+    graphicswindow.top = 200
+    graphicswindow.left = 200
+
+    graphicswindow.title = "Shape Drawing and Filling Test"
+
+    graphicswindow.pencolor = "#D0a0"
+    graphicswindow.drawtext(0, 0, graphicswindow.title)
+    graphicswindow.drawboundtext(0, 100, 70, "The quick brown fox jumps over the lazy dog.")
+
+    graphicswindow.drawtriangle(0,0,0,500,500,0)
+Endif
+'GraphicsWindow.Hide()
