@@ -137,6 +137,8 @@ def translate_color(code, default_color):
              otherwise.
     """
     code = str(code).upper()
+    if code == "TRANSPARENT":
+        return 0, "#000000"
     col = code[1:]
     try:
         return 255, color_parser["GraphicWindow"][code.lower()]
@@ -160,3 +162,26 @@ def translate_color(code, default_color):
             alpha = int(col[0:2], 16)
             color = "#" + col[2:]
         return alpha, color
+
+
+# TODO: use numerical_args throughout this project
+def numerical_args(method):
+    """
+    :param method: A method of a class that needs its arguments to be converted into numerical values
+    :return: A method that converts its arguments into numerical values automatically.
+    """
+    def f(self, *args):
+        args = map(numericize, args)
+        return method(self, *args)
+    return f
+
+
+def bool_setter(method):
+    """
+    :param method: A method of a class that needs its arguments to be converted from strings into boolean values
+    :return: A method that converts its arguments into boolean values automatically.
+    """
+    def f(self, *args):
+        args = ((str(arg).lower() == "true") for arg in args)
+        return method(self, *args)
+    return f
