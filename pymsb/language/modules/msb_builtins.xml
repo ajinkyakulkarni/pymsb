@@ -149,4 +149,25 @@
             <method name="GetWebPageContents" num_args="1"/>
         </methods>
     </object>
+    <object name="File">
+        <methods>
+            <method name="AppendContents" num_args="2"/>
+            <method name="CopyFile" num_args="2"/>
+            <method name="CreateDirectory" num_args="1"/>
+            <method name="DeleteDirectory" num_args="1"/>
+            <method name="DeleteFile" num_args="1"/>
+            <method name="GetDirectories" num_args="1"/>
+            <method name="GetFiles" num_args="1"/>
+            <method name="GetSettingsFilePath" num_args="0"/>
+            <method name="GetTemporaryFilePath" num_args="0"/>
+            <method name="InsertLine" num_args="3"/>
+            <method name="ReadContents" num_args="1"/>
+            <method name="ReadLine" num_args="2"/>
+            <method name="WriteContents" num_args="2"/>
+            <method name="WriteLine" num_args="3"/>
+        </methods>
+        <fields>
+            <field name="LastError"/>
+        </fields>
+    </object>
 </builtins>

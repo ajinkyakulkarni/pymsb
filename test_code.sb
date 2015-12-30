@@ -1,4 +1,4 @@
-a = "network"
+a = "file"
 if a = 1 Then
     GraphicsWindow.BrushColor = "#00ccddee"
     GraphicsWindow.FillRectangle(10,10,100,100)
@@ -114,6 +114,13 @@ elseif a = "network" then
     url = "https://lh5.googleusercontent.com/-RCa2ljQkA_Q/AAAAAAAAAAI/AAAAAAAAAhQ/c-gO_580CMQ/photo.jpg"
     img = Network.DownloadFile(url)
     TextWindow.WriteLine("Image location: " + img)
+
+elseif a = "file" then
+    File.AppendContents("/home/simon/Downloads/asdfasdf.sb", "TextWindow.Show()")
+    TextWindow.WriteLine(File.GetTemporaryFilePath())
+
+    TextWindow.WriteLine(File.ReadContents("hi"))
+    TextWindow.WriteLine(File.LastError)
 
 Endif
 'GraphicsWindow.Hide()

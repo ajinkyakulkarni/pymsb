@@ -38,6 +38,7 @@ class Interpreter:
             "Text": modules.Text(),
             "Stack": modules.Stack(),
             "Network": modules.Network(),
+            "File": modules.FileModule(),
         }
 
         self.threads = []
