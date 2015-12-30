@@ -1,3 +1,5 @@
+# TODO: Eventually, popping from an empty stack needs to terminate the program gracefully.
+
 # noinspection PyPep8Naming
 class Stack:
     def __init__(self):
