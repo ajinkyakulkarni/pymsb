@@ -10,5 +10,5 @@ setup(name='pymsb',
           'gui_scripts': [
               'pymsb = pymsb.__main__:main'
           ]
-      },
+      }, requires=['requests']
       )

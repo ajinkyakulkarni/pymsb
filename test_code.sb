@@ -1,4 +1,4 @@
-a = "stack"
+a = "network"
 if a = 1 Then
     GraphicsWindow.BrushColor = "#00ccddee"
     GraphicsWindow.FillRectangle(10,10,100,100)
@@ -106,6 +106,14 @@ elseif a = "stack" then
 
     TextWindow.WriteLine("invalid stack name pop: " + Stack.Popvalue("asdf"))
 
+elseif a = "network" then
+
+    s = Network.GetWebPageContents("http://example.com/")
+    TextWindow.WriteLine("Example.com source: " + s)
+
+    url = "https://lh5.googleusercontent.com/-RCa2ljQkA_Q/AAAAAAAAAAI/AAAAAAAAAhQ/c-gO_580CMQ/photo.jpg"
+    img = Network.DownloadFile(url)
+    TextWindow.WriteLine("Image location: " + img)
 
 Endif
 'GraphicsWindow.Hide()

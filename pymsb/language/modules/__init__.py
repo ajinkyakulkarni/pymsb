@@ -5,5 +5,6 @@ from pymsb.language.modules.graphicswindow import GraphicsWindow
 from pymsb.language.modules.math import Math
 from pymsb.language.modules.text import Text
 from pymsb.language.modules.stack import Stack
+from pymsb.language.modules.network import Network
 
 __author__ = 'Simon Tang'

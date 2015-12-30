@@ -37,6 +37,7 @@ class Interpreter:
             "GraphicsWindow": modules.GraphicsWindow(self, self.tk_root),
             "Text": modules.Text(),
             "Stack": modules.Stack(),
+            "Network": modules.Network(),
         }
 
         self.threads = []

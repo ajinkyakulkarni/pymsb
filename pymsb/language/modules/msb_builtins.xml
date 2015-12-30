@@ -143,4 +143,10 @@
             <method name="PushValue" num_args="2"/>
         </methods>
     </object>
+    <object name="Network">
+        <methods>
+            <method name="DownloadFile" num_args="1"/>
+            <method name="GetWebPageContents" num_args="1"/>
+        </methods>
+    </object>
 </builtins>
