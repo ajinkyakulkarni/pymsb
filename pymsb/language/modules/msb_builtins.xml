@@ -136,4 +136,11 @@
             <method name="StartsWith" num_args="2"/>
         </methods>
     </object>
+    <object name="Stack">
+        <methods>
+            <method name="GetCount" num_args="1"/>
+            <method name="PopValue" num_args="1"/>
+            <method name="PushValue" num_args="2"/>
+        </methods>
+    </object>
 </builtins>

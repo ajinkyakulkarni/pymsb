@@ -1,4 +1,4 @@
-a = 3
+a = "stack"
 if a = 1 Then
     GraphicsWindow.BrushColor = "#00ccddee"
     GraphicsWindow.FillRectangle(10,10,100,100)
@@ -92,6 +92,20 @@ elseif a = 3 Then
     graphicswindow.drawtext(360, 100, "adsfasdfasdfasdf")
 
     graphicswindow.showmessage("let it go", "let it go")
+
+elseif a = "stack" then
+    s = "mystack"
+    TextWindow.WriteLine("mystack length: " + Stack.GetCount(s))
+    Stack.PushValue(s, "firstvalue")
+    TextWindow.WriteLine("mystack length: " + Stack.GetCount(s))
+    v = Stack.PopValue(s)
+    TextWindow.WriteLine("mystack popped value: " + v)
+    TextWindow.WriteLine("mystack length: " + Stack.GetCount(s))
+    TextWindow.WriteLine("mystack popped value again: " + Stack.Popvalue(s))
+    TextWindow.WriteLine("mystack length: " + Stack.GetCount(s))
+
+    TextWindow.WriteLine("invalid stack name pop: " + Stack.Popvalue("asdf"))
+
 
 Endif
 'GraphicsWindow.Hide()
