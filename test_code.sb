@@ -1,4 +1,4 @@
-a = "file"
+a = "desktop"
 if a = 1 Then
     GraphicsWindow.BrushColor = "#00ccddee"
     GraphicsWindow.FillRectangle(10,10,100,100)
@@ -121,6 +121,9 @@ elseif a = "file" then
 
     TextWindow.WriteLine(File.ReadContents("hi"))
     TextWindow.WriteLine(File.LastError)
+
+elseif a = "desktop" then
+    TextWindow.WriteLine("Width: " + Desktop.Width + " Height: " + Desktop.Height)
 
 Endif
 'GraphicsWindow.Hide()

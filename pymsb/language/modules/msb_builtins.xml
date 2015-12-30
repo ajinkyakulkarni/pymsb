@@ -170,4 +170,13 @@
             <field name="LastError"/>
         </fields>
     </object>
+    <object name="Desktop">
+        <methods>
+            <method name="SetWallpaper" num_args="1"/>
+        </methods>
+        <fields>
+            <field name="Height" readonly="1"/>
+            <field name="Width" readonly="1"/>
+        </fields>
+    </object>
 </builtins>

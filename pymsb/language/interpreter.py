@@ -39,6 +39,7 @@ class Interpreter:
             "Stack": modules.Stack(),
             "Network": modules.Network(),
             "File": modules.FileModule(),
+            "Desktop": modules.Desktop(self, self.tk_root),
         }
 
         self.threads = []
