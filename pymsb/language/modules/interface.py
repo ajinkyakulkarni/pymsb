@@ -15,7 +15,7 @@ class PyMsbWindow:
         self.window.protocol("WM_DELETE_WINDOW", self.exit_interpreter)
 
     def exit_interpreter(self):
-        self.interpreter.exit()
+        self.interpreter._exit()
         self.root.destroy()
 
     def Show(self):

@@ -78,7 +78,7 @@ class Parser:
             if None in expected_types:
                 return None
             line_index = self.tokens[-1].line_index_end
-            raise errors.PyMsbExpectedTokenError(self.line_number, line_index, expected_types)
+            raise errors.PyMsbExpectedTokenError(self.line_number, line_index, *expected_types)
 
         if expected_types and self.tokens[index].token_type not in expected_types:
             raise errors.PyMsbUnexpectedTokenError(self.tokens[index])
@@ -259,7 +259,7 @@ class Parser:
         if kw_token.token_type == "For":
             var = self.__get_token(1, MsbToken.SYMBOL).value
             var_ast = ast.UserVariable(var)  # note, in MSB "For array[0] = 1 to 10" is not valid
-            self.__get_token(2, 2, MsbToken.EQUALS)
+            self.__get_token(2, MsbToken.EQUALS)
             self.token_index += 3
             lower_expr = self.__parse_expr("To")  # remember to match capitalization in MsbToken.keywords
             upper_expr = self.__parse_expr()
@@ -344,10 +344,10 @@ class Parser:
         # SYMBOL DOT SYMBOL - a built-in
         elif t.token_type == MsbToken.DOT:
             obj = self.__get_token(0)
-            field = self.__get_token(2, 2, MsbToken.SYMBOL)
+            field = self.__get_token(2, MsbToken.SYMBOL)
 
             # Assignment or built-in function call
-            self.__get_token(3, 3, MsbToken.L_PARENS, MsbToken.EQUALS)
+            self.__get_token(3, MsbToken.L_PARENS, MsbToken.EQUALS)
 
             # Function call, with variable number of arguments
             if self.tokens[3].token_type == MsbToken.L_PARENS:
