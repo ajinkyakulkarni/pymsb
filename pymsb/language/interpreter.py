@@ -1,5 +1,6 @@
 """This module contains the interpreter that executes a list of Instructions created
 by the Parser class."""
+from collections import OrderedDict
 
 import tkinter as tk
 import threading
@@ -9,7 +10,7 @@ import pymsb.language.abstractsyntaxtrees as ast
 import pymsb.language.errors as errors
 import pymsb.language.modules as modules
 from pymsb.language.parser import Parser
-
+from pymsb.language.arrayparser import ArrayParser
 
 # TODO: address the following differences between MS Small Basic and Py_MSB:
 # Storage of decimals/floats + precision level + what precision is based on (string length, actual bits)
@@ -27,6 +28,7 @@ class Interpreter:
         self.current_statement_index = 0
         self.statements = []
         self.sub_return_locations = []
+        self.array_parser = ArrayParser()
 
     def execute_code(self, code):
         """Executes the given Microsoft Small Basic code, given as a string."""
@@ -58,6 +60,7 @@ class Interpreter:
             "Network": modules.Network(),
             "File": modules.FileModule(),
             "Desktop": modules.Desktop(self, self.__tk_root),
+            "Array": modules.Array(self.array_parser)
         }
 
         self.__threads = []
@@ -87,16 +90,28 @@ class Interpreter:
         self.__tk_root.quit()
 
     def _assign(self, destination_ast, value_ast, line_number=None):
-        if isinstance(destination_ast, ast.UserVariable):
-            if isinstance(value_ast, ast.UserVariable):
-                if self.environment.is_subroutine(value_ast.variable_name):
-                    raise errors.PyMsbSyntaxError(
-                        line_number, 0,
-                        "Subroutine '{0}' can only be assigned to an event.".format(value_ast.variable_name))
-            self.environment.bind(destination_ast.variable_name, self._evaluate_expression_ast(value_ast))
+        # if isinstance(destination_ast, ast.UserVariable):
+        #     if isinstance(value_ast, ast.UserVariable):
+        #         '''if self.environment.is_subroutine(value_ast.variable_name):
+        #             raise errors.PyMsbSyntaxError(
+        #                 line_number, 0,
+        #                 "Subroutine '{0}' can only be assigned to an event.".format(value_ast.variable_name))
+        #     '''
+        #     self.environment.bind(destination_ast.variable_name, self._evaluate_expression_ast(value_ast))
 
-        if isinstance(destination_ast, ast.UserVariableArrayAccess):
-            return  # TODO: implement array support
+        if isinstance(destination_ast, ast.UserVariable):
+            # Assigning to variable as an array using one or more indices
+            if destination_ast.array_indices:
+                array_string = self.environment.get_variable(destination_ast.variable_name)
+                index_values = [str(self._evaluate_expression_ast(index_ast)) for index_ast in destination_ast.array_indices]
+                value = str(self._evaluate_expression_ast(value_ast))
+
+                new_array_string = self.array_parser.set_value(array_string, index_values, value)
+                self.environment.bind(destination_ast.variable_name, new_array_string)
+
+            # Just overwriting variable
+            else:
+                self.environment.bind(destination_ast.variable_name, self._evaluate_expression_ast(value_ast))
 
         if isinstance(destination_ast, ast.MsbObjectField):
             # Check if this is a field or an event
@@ -104,10 +119,10 @@ class Interpreter:
                                           destination_ast.msb_object_field_name):
                 # Must be assigning to a subroutine
                 sub_name = value_ast.variable_name
-                if self.environment.is_subroutine(sub_name):
+                '''if self.environment.is_subroutine(sub_name):
                     self._assign_msb_event(destination_ast.msb_object,
                                           destination_ast.msb_object_field_name,
-                                          sub_name)
+                                          sub_name)'''
             else:
                 self._assign_msb_object_field(destination_ast.msb_object,
                                              destination_ast.msb_object_field_name,
@@ -132,20 +147,29 @@ class Interpreter:
     def _evaluate_expression_ast(self, val_ast):
         if isinstance(val_ast, ast.LiteralValue):
             return val_ast.value  # always a string
+
         if isinstance(val_ast, ast.UserVariable):
-            return self.environment.get_variable(val_ast.variable_name)
-        if isinstance(val_ast, ast.UserVariableArrayAccess):
-            try:
-                # TODO: rigorously check what can and can't be done in MSB regarding array access/modifcation
-                arr = self.to_dict(self.environment.get_variable(val_ast.variable_name))
-                index = self._evaluate_expression_ast(val_ast.index_expr)
-                return arr.get(index, "")
-            except errors.PyMsbMalformedArrayError:
-                return ""
+            value = self.environment.get_variable(val_ast.variable_name)
+
+            # If accessing variable as an array
+            if val_ast.array_indices:
+                index_values = [str(self._evaluate_expression_ast(i)) for i in val_ast.array_indices]
+                for index in index_values:
+                    value = self.array_parser.array_to_ordered_dict(value)
+                    if not value:  # Value was an empty string or did not represent a valid MSB array.
+                        return ""
+                    value = value[index]  # Value is now a string again.
+                return value
+
+            # Just accessing variable
+            return value
+
         if isinstance(val_ast, ast.MsbObjectField):
             return self._evaluate_object_field(val_ast.msb_object, val_ast.msb_object_field_name)
+
         if isinstance(val_ast, ast.Operation):
             return self._evaluate_operation(val_ast.operator, val_ast.left, val_ast.right)
+
         if isinstance(val_ast, ast.MsbObjectFunctionCall):
             return self._execute_function_call(val_ast.msb_object,
                                               val_ast.msb_object_function,
@@ -154,7 +178,7 @@ class Interpreter:
         raise NotImplementedError(val_ast)
 
     def _execute_function_call(self, obj_name, fn_name, arg_asts):
-        arg_vals = [self._evaluate_expression_ast(arg_ast) for arg_ast in arg_asts]
+        arg_vals = [str(self._evaluate_expression_ast(arg_ast)) for arg_ast in arg_asts]
         fn = getattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(fn_name))
         return fn.__call__(*arg_vals)
 
@@ -162,7 +186,7 @@ class Interpreter:
         return getattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name))
 
     def _assign_msb_object_field(self, obj_name, field_name, arg_value):
-        setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name), arg_value)
+        setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name), str(arg_value))
 
     def _assign_msb_event(self, obj_name, event_name, sub_name):
         # TODO: implement the event things
@@ -228,6 +252,7 @@ class Environment:
         return False  # TODO: implement Environment.is_array
 
 
+# noinspection PyProtectedMember
 class InterpreterThread(threading.Thread):
     def __init__(self, interpreter, line_number):
         super().__init__()

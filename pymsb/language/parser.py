@@ -97,8 +97,7 @@ class Parser:
 
     def __parse_expr(self, *closing_braces, allow_comparators=False, allow_empty=False):
         """ Parses the given self.tokens beginning from the given index, until the closing brace is encountered (or end of
-        line, if opening_brace = None).  Returns a tuple consisting of the index immediately after the end of the
-        expression, and the AST representing the expression. """
+        line, if opening_brace = None).  Returns an AST representing the expression. """
 
         if not closing_braces:
             closing_braces = (None,)
@@ -157,10 +156,20 @@ class Parser:
                 # Access to an array index
                 elif t2.token_type == MsbToken.L_BRACKET:
                     self.token_index += 2  # pass the symbol and the L_BRACKET
-                    array_ind_ast = self.__parse_expr(MsbToken.R_BRACKET)
-                    opd = ast.UserVariableArrayAccess(t.value, array_ind_ast)
+                    array_index_asts = []
+                    while True:  # Look for potentially multiple [index] in a row
+                        array_index_ast = self.__parse_expr(MsbToken.R_BRACKET)
+                        array_index_asts.append(array_index_ast)
+                        # After this expression, there is either another index [, an operator, or EOL.
+                        if self.token_index >= len(self.tokens):
+                            break
+                        if self.tokens[self.token_index].token_type != MsbToken.L_BRACKET:
+                            break
+                        self.token_index += 1
 
-                # Is a built-in of some kind.  Check if fn call, or built-in field value access, or invalid
+                    opd = ast.UserVariable(t.value, array_index_asts)
+
+                # Is a built-in of some kind.  Check if fn call, or to-in field value access, or invalid
                 elif t2.token_type == MsbToken.DOT:
                     field_token = self.__get_token(2, MsbToken.SYMBOL)
                     action_token = self.__get_token(3, MsbToken.L_PARENS, MsbToken.OPERATOR, *closing_braces)
@@ -368,11 +377,19 @@ class Parser:
         # Assignment to a user-defined array value
         elif t.token_type == MsbToken.L_BRACKET:
             self.token_index += 2
-            array_index_ast = self.__parse_expr(MsbToken.R_BRACKET)
-            eq = self.__get_token(0, MsbToken.EQUALS)
-            self.token_index += 1
+            array_index_asts = []
+            while True:  # Look for potentially multiple [index] in a row
+                array_index_ast = self.__parse_expr(MsbToken.R_BRACKET)
+                array_index_asts.append(array_index_ast)
+                # After this expression, there is either another index or an equal sign
+                l_bracket_or_equals_token = self.__get_token(0, MsbToken.EQUALS, MsbToken.L_BRACKET)
+                self.token_index += 1
+                if l_bracket_or_equals_token.token_type == MsbToken.EQUALS:
+                    break
+
+            array_access_ast = ast.UserVariable(tokens[0].value, array_index_asts)
             val_ast = self.__parse_expr()
-            return ast.Assignment(self.line_number, ast.UserVariableArrayAccess(tokens[0].value, array_index_ast), val_ast)
+            return ast.Assignment(self.line_number, array_access_ast, val_ast)
 
         # Assignment to a user-defined variable
         elif t.token_type == MsbToken.EQUALS:

@@ -22,7 +22,7 @@ class Text:
         return str(ord(ch))
 
     def GetIndexOf(self, t, subt):
-        ind = str(t).find(subt)
+        ind = t.find(subt)
         if ind == -1:
             return "0"
         return ind

@@ -42,17 +42,6 @@ class Assignment(Statement):
         return "Assignment{{{0} = {1}}}".format(self.var, self.val)
 
 
-class UserVariable:
-    """ An AST representing a reference to a user-defined variable. """
-
-    def __init__(self, variable_name):
-        super().__init__()
-        self.variable_name = variable_name
-
-    def __repr__(self):
-        return "UserVariable<{0}>".format(self.variable_name)
-
-
 class LiteralValue:
     """ An AST representing a literal value in Microsoft Small Basic (e.g. "Hello world!" or 10).
 
@@ -67,16 +56,20 @@ class LiteralValue:
         return "Literal<{0}>".format(self.value)
 
 
-class UserVariableArrayAccess:
-    """ An AST representing an array indexing access operation """
-    def __init__(self, variable_name, index_expr):
+class UserVariable:
+    """ An AST representing access to a square-bracket array via one or more dimensions."""
+    def __init__(self, variable_name, array_indices=[]):
+        """
+        :param variable_name: The string representing the user variable that is used as a square-bracket array.
+        :param array_indices: A non-empty list of ASTs representing the index/indices to access the array.
+        """
         super().__init__()
         self.variable_name = variable_name
-        self.index_expr = index_expr
+        self.array_indices = array_indices
 
     def __repr__(self):
-        return "ArrayAccess<{0}[{1}]>".format(self.variable_name, repr(self.index_expr))
-
+        return "UserVariable<{0}{1}>".format(self.variable_name,
+                                            "".join("[" + repr(i) + "]" for i in self.array_indices))
 
 class MsbObjectField:
     """ An AST representing a reference to a built-in Microsoft Small Basic object field.

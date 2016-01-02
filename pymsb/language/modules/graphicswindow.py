@@ -60,11 +60,9 @@ class GraphicsWindow(PyMsbWindow):
         return str(self.window.resizable() == (1, 1))
 
     @CanResize.setter
+    @utilities.bool_setter
     def CanResize(self, b):
-        if b.lower() == "true":
-            self.window.resizable(True, True)
-        else:
-            self.window.resizable(False, False)
+        self.window.resizable(b, b)
 
     # TODO: FontBold, FontItalic, FontName
     @property
@@ -123,7 +121,7 @@ class GraphicsWindow(PyMsbWindow):
     @property
     def MouseY(self):
         pos = self.window.winfo_pointery() - self.window.winfo_rooty()
-        if pos < 0 or pos > int(self.Height): # if not visible, self.Height is 1
+        if pos < 0 or pos > int(self.Height):  # if not visible, self.Height is 1
             return "0"
         return str(pos)
 
