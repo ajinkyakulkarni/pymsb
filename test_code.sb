@@ -22,3 +22,12 @@ TextWindow.WriteLine(people["simon"]["city"])
 
 TextWindow.WriteLine(ages["simon"])
 
+
+v[1][2] = "value"
+TextWindow.WriteLine("v is " + v)
+TextWindow.WriteLine(v[1])
+TextWindow.WriteLine(v[2])
+TextWindow.WriteLine(v[1][2])
+TextWindow.WriteLine(v[1][3])
+TextWindow.WriteLine(v[2][3])
+TextWindow.WriteLine("------")

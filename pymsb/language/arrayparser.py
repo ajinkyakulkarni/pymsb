@@ -129,15 +129,16 @@ class ArrayParser:
         :param index_values: The index/indices being used to specify the location in the array.
         :return: The value at the specified location in the array.
         """
-        # TODO: replace with an iterative version that uses iteritems
-        od = self.array_to_ordered_dict(array_string, follow_nested=True)
-        for i, index in enumerate(index_values):
-            if isinstance(od, OrderedDict):
-                od = od.get(index, "")
-            else:  # Trying to index a string that isn't an MSB array
-                return ""
-        return od
 
+        value = ""
+        for index_value in index_values:
+            od = self.array_to_ordered_dict(array_string)
+            value = od.get(index_value, None)
+            if value is None:
+                return ""
+            array_string = value
+
+        return value
 
     def set_value(self, array_string, index_values, value):
         """

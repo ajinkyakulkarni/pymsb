@@ -154,12 +154,7 @@ class Interpreter:
             # If accessing variable as an array
             if val_ast.array_indices:
                 index_values = [str(self._evaluate_expression_ast(i)) for i in val_ast.array_indices]
-                for index in index_values:
-                    value = self.array_parser.array_to_ordered_dict(value)
-                    if not value:  # Value was an empty string or did not represent a valid MSB array.
-                        return ""
-                    value = value[index]  # Value is now a string again.
-                return value
+                return self.array_parser.get_value(value, index_values)
 
             # Just accessing variable
             return value
