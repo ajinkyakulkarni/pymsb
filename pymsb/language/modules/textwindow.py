@@ -5,6 +5,7 @@ from pymsb.language.modules import utilities as py_msb_utils
 from pymsb.language.modules.interface import PyMsbWindow
 from idlelib.WidgetRedirector import WidgetRedirector
 
+# FIXME: sometimes when expecting text input, the output area doesn't update until clicked.
 # TODO: implement text input inside the output console instead of in a separate tk.Entry
 # TODO: make the window follow the insertion cursor.
 # TODO: rework textwindow so input is inserted directly into window instead of textbox below, and allow cursor in any position in range
@@ -49,6 +50,7 @@ class TextWindow(PyMsbWindow):
                                   bd=0)
         self.input_box.grid(row=1, column=1, sticky=(tk.N + tk.E + tk.S + tk.W))
         self.input_box.bind("<Return>", self.on_input_box_return)
+        self.input_box.bind("<KP_Enter>", self.on_input_box_return)
         self.input_box.bind("<Key>", self.on_input_box_key)
         self.input_box.focus()
 

@@ -1,12 +1,17 @@
 from collections import OrderedDict
-from queue import LifoQueue
 from pymsb.language import abstractsyntaxtrees as ast
 import pymsb.language.errors as errors
-from pymsb.language.modules import utilities
 import re
+
+# TODO: describe errors that may be raised
 
 
 class Parser:
+    """
+    The Parser converts multi-line strings containing Microsoft Small Basic code into ASTs representing instructions for
+    the Interpreter.
+    """
+
     def __init__(self):
         self.line_number = -1
         self.token_index = -1
@@ -14,11 +19,22 @@ class Parser:
         self.line = ""
 
     def parse(self, code):
+        """
+        Consumes a single multiline string containing Microsoft Small Basic code.
+        If no syntax errors are detected, this returns a list of ASTs representing instructions for the Interpreter.
+        If syntax errors are detected, this outputs to stdout and returns None.
+
+        :param code: A multiline string containing Microsoft Small Basic code.
+        :return: A list of abstractsyntaxtrees.Statement instances, or None.
+        """
         asts = []
+
         # This keeps track of what code blocks are "open" right now in the current part of the code
         # noinspection PyAttributeOutsideInit
         self.open_code_block_asts = []
+
         error_list = []
+
         lines = code.splitlines()
         for self.line_number, self.line in enumerate(lines):
             try:
@@ -29,8 +45,8 @@ class Parser:
             if ast:
                 asts.append(ast)
 
+        # If we didn't close our code blocks
         if self.open_code_block_asts:
-            # We didn't close our code blocks
             # TODO: give detailed output of what we're missing
             message = "Missing the closing for " + repr(self.open_code_block_asts[-1])
             error_list.append(errors.PyMsbExpectedExpressionError(self.line_number, message))
@@ -41,16 +57,25 @@ class Parser:
         except errors.PyMsbSyntaxError as e:
             error_list.append(e)
 
+        # No issues detected during parsing
+        if not error_list:
+            return asts
+
+        # If there were errors detected, print in user-friendly format and return None.
         for error in error_list:
             print(lines[error.line_number])
             print(' '*error.line_index + '^')
             print("\t", error, "\n")
-        if not error_list:
-            return asts
         return None
 
     def tokenize(self, line, include_comments=False):
-        # Takes a single line of MSB and generates a list of self.tokens.  TODO: docstrings
+        """
+        Takes a single line of MSB and generates a list of MsbToken instances.
+
+        :param line: A single-line string of MSB code.
+        :param include_comments: If true, then comments are included as MsbToken instances of type MsbToken.COMMENT.
+        :return: A list of MsbToken instances representing the given line of code.
+        """
         self.tokens = []
         line_tokenizing = line.lstrip()
         while line_tokenizing:
@@ -71,6 +96,19 @@ class Parser:
         return self.tokens
 
     def __get_token(self, token_index_offset, *expected_types):
+        """
+        Attempts to return the MsbToken located at the current index (self.token_index) plus token_index.  If this is
+        out of bounds, or the type of the token does not match the expected types, then one of PyMsbExpectedTokenError
+        or PyMsbUnexpectedTokenError are raised.
+
+        :param token_index_offset: The number of tokens ahead to read from the current value of self.token_index.
+        :param expected_types: If non-empty, then the list of MsbToken types to allow (i.e. not raise an exception for).
+                               If empty, then all token types are allowable.
+                               If (and only if) None is in expected_types, then None will be returned if no token was
+                               found at the given offset from self.token_index rather than PyMsbExpectedTokenError.
+        :return: The MsbToken at the given offset from self.token_index, or None if out of bounds and None is in
+                 expected_types.
+        """
         index = self.token_index + token_index_offset
 
         # Past end of the line; either silently return None if None is expected or raise PyMsbExpectedTokenError
@@ -85,6 +123,12 @@ class Parser:
         return self.tokens[index]
 
     def __parse_arg_exprs(self):
+        """
+        Helper function to parse the arguments in a call to an MSB built-in function, where self.token_index is
+        immediately after the open left parenthesis.
+
+        :return: A list of ASTs representing the arguments for an MSB built-in function.
+        """
         arg_asts = []
         while True:
             expr_ast = self.__parse_expr(MsbToken.R_PARENS, MsbToken.COMMA, allow_empty=True)
@@ -96,8 +140,15 @@ class Parser:
                 return arg_asts
 
     def __parse_expr(self, *closing_braces, allow_comparators=False, allow_empty=False):
-        """ Parses the given self.tokens beginning from the given index, until the closing brace is encountered (or end of
-        line, if opening_brace = None).  Returns an AST representing the expression. """
+        """
+        Helper function to parse the operands and operators in an expression, starting from self.token_index.
+        :param closing_braces: The list of token types that can terminate the current expression.  If None is in
+                               closing_braces, then encountering EOL can terminate the current expression.
+        :param allow_comparators: If true, then comparators like =, < and "and" can be used in place of operators.
+        :param allow_empty: If true, then an empty expression is valid.
+        :return: An AST representing this expression.
+        """
+        # FIXME: "and" and "or" are not supported yet.
 
         if not closing_braces:
             closing_braces = (None,)
@@ -225,7 +276,19 @@ class Parser:
         return None
 
     def __parse_keyword_statement(self):
+        """
+        Helper function to parse a statement beginning with If, For, While, etc.
+
+        :return: An AST representing the current statement being parsed.
+        """
+
         def assert_open_code_block(*open_code_block_keywords):
+            """
+            Raises errors.PyMsbUnexpectedTokenError iff the current open block isn't one of the given types.
+
+            :param open_code_block_keywords: The type(s) of open code blocks that are allowed.
+            :raise errors.PyMsbUnexpectedTokenError: If current open code block is not one of the given types.
+            """
             if open_block_keyword not in open_code_block_keywords:
                 raise errors.PyMsbUnexpectedTokenError(kw_token)
                 # raise errors.PyMsbExpectedTokenError(self.line_number, 0, *open_code_block_keywords)
@@ -305,6 +368,7 @@ class Parser:
         # ==========================================================================================
         # SUB
         # TODO: make this use something similar to what the ifs are using or at least have the right checks
+        # TODO: check if the above TODO has been fulfilled
         if kw_token.token_type == "Sub":
             sub_name = self.__get_token(1, MsbToken.SYMBOL).value
             self.__get_token(2, None)
@@ -326,6 +390,12 @@ class Parser:
             return ast.GotoStatement(self.line_number, label_name)
 
     def __parse_tokens(self, tokens):
+        """
+        Parses a tokenized line of Microsoft Small Basic code.
+
+        :param tokens: A list of MsbToken instances that composes a single line of code in Microsoft Small Basic.
+        :return: A single AST representing this line of Microsoft Small Basic code.
+        """
         if not tokens:
             return None
 
@@ -355,7 +425,7 @@ class Parser:
             obj = self.__get_token(0)
             field = self.__get_token(2, MsbToken.SYMBOL)
 
-            # Assignment or built-in function call
+            # Verify that this is an assignment to a field/event, or is a built-in function call
             self.__get_token(3, MsbToken.L_PARENS, MsbToken.EQUALS)
 
             # Function call, with variable number of arguments
@@ -403,12 +473,15 @@ class Parser:
             self.__get_token(3, None)
             return ast.SubroutineCall(self.line_number, self.tokens[0].value)
 
-        # We shouldn't have this part because of self.get_token(self.tokens,  parameter restrictions
-        else:
-            raise errors.PyMsbUnrecognizedStatementError(self.line_number, 0)
+        # Because of self.get_token(self.tokens,  parameter restrictions, this line shouldn't be reached.
+        raise errors.PyMsbUnrecognizedStatementError(self.line_number, 0)
 
     def __scan_for_labels_and_subroutines(self, asts):
-        # This scans for duplicate/missing definitions and stores the line numbers of labels and subroutines.
+        """
+        Helper function to scan for duplicate/missing labels/subroutines and store their line numbers.
+        :param asts: A list of ASTs representing the parsed program.
+        :return: None
+        """
         label_asts = dict()
         sub_asts = dict()
 
@@ -449,7 +522,14 @@ class Parser:
                     stmt_ast.jump_target = sub_asts[name]
 
 
-class MsbToken:
+class MsbToken:  # TODO:
+    """
+    For internal use in Parser, in the tokenization process that happens before the tokens are parsed into statements.
+    :param token_type: One of the static members defined below.
+    :param value:
+    :param line_number:
+    :param line_index:
+    """
     COMMENT = "a comment"
     SYMBOL = "a variable or an object"
     LITERAL = "a number or a string"
@@ -462,8 +542,7 @@ class MsbToken:
     COLON = ":"
     COMPARATOR = "<=, >=, <, >, <>"
     OPERATOR = "+, -, *, /"
-    EQUALS = "="  # TODO: remember that EQUALS can be assignment or a comparator based on context,
-                  # but MsbToken with = will be EQUALS and not COMPARATOR
+    EQUALS = "="  # Note: EQUALS can be assignment or comparator based on context, but token_type will always be EQUALS.
 
     keywords = {"If", "ElseIf", "Else", "EndIf", "Then",
                 "While", "EndWhile",
@@ -484,7 +563,7 @@ class MsbToken:
     regexes[L_BRACKET] = "\["
     regexes[R_BRACKET] = "]"
     regexes[SYMBOL] = "[a-zA-Z_]\w*"
-    # Notes on literals: no escape codes in strs, multiple leading - ok
+    # Notes on literals: strings have no escape codes.  Multiple leading "-" in numeric literals are ok.
     regexes[LITERAL] = ("-*\d+[.]?\d*"
                         "|"
                         "\".*?(\"|$)"  # for some reason, if end of line before closing quote, is ok.
@@ -513,7 +592,7 @@ class MsbToken:
         return self.token_type + "<" + self.value + ">"
 
     def __repr__(self):
-        return self.__str__()  # TODO: implement __repr__ for MsbToken
+        return self.__str__()  # TODO: implement __repr__ for MsbToken, determine if
 
     def is_keyword(self):
         # TODO: decide on capitalization of internal constants
