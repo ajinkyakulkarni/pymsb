@@ -41,6 +41,9 @@ File.AppendContents(temp, "Simon")
 File.AppendContents(temp, "Tang")
 TextWindow.WriteLine(File.ReadContents(temp))
 
+TextWindow.WriteLine("Sin of pi/4 is " + Math.Sin(Math.Pi/4))
+TextWindow.WriteLine("Square of Sin of pi/4 is " + Math.Power(Math.Sin(Math.Pi/4), 2))
+
 While 1 = 1
     TextWindow.WriteLine("Hello, after pressing ENTER the program should terminate with exit code 0.")
     TextWindow.Pause()
