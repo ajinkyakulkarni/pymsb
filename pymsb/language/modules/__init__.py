@@ -9,5 +9,6 @@ from pymsb.language.modules.network import Network
 from pymsb.language.modules.file import FileModule
 from pymsb.language.modules.desktop import Desktop
 from pymsb.language.modules.array import Array
+from pymsb.language.modules.program import Program
 
 __author__ = 'Simon Tang'

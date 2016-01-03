@@ -1,7 +1,4 @@
-"""This module contains the interpreter that executes a list of Instructions created
-by the Parser class."""
-from collections import OrderedDict
-
+import sys
 import tkinter as tk
 import threading
 import time
@@ -30,22 +27,31 @@ class Interpreter:
         self.sub_return_locations = []
         self.array_parser = ArrayParser()
 
-    def execute_code(self, code):
+        self.__program_path = None
+
+    def execute_code(self, code, args=[]):
         """Executes the given Microsoft Small Basic code, given as a string."""
         self.__init_tk()
+        self.prog_args = args
 
         self.statements = self.parser.parse(code)
         if self.statements:
             self.__scan_code()
+            self.__program_path = None
             self.__tk_root.after(1, self.__start_main_thread)
             self.__tk_root.mainloop()
         self._exit()
 
-    def execute_file(self, file_path):
+    def execute_file(self, file_path, args=[]):
         """Executes the given Microsoft Small Basic source code file."""
         with open(file_path) as code_file:
             code = code_file.read()
-            self.execute_code(code)
+            self.__program_path = code_file.name  # FIXME: figure out how to get the directory here
+            self.execute_code(code, args)
+
+    @property
+    def program_path(self):
+        return self.__program_path
 
     def __init_tk(self):
         self.__tk_root = tk.Tk()
@@ -60,7 +66,8 @@ class Interpreter:
             "Network": modules.Network(),
             "File": modules.FileModule(),
             "Desktop": modules.Desktop(self, self.__tk_root),
-            "Array": modules.Array(self.array_parser)
+            "Array": modules.Array(self.array_parser),
+            "Program": modules.Program(self),
         }
 
         self.__threads = []
@@ -84,10 +91,10 @@ class Interpreter:
         else:
             self.__tk_root.after(100, self.__check_threads_finished)
 
-    def _exit(self):
-        # TODO: add the logic regarding when to exit, when not to exit, and add TextWindow.PauseIfVisible() (I think?)
+    def _exit(self, status=None):
         # TODO: make this able to close all running interpreter threads
         self.__tk_root.quit()
+        sys.exit(status)
 
     def _assign(self, destination_ast, value_ast, line_number=None):
         # if isinstance(destination_ast, ast.UserVariable):

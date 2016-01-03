@@ -192,4 +192,15 @@
             <method name="SetValue" num_args="3"/>
         </methods>
     </object>
+    <object name="Program">
+        <methods>
+            <method name="Delay" num_args="1"/>
+            <method name="End" num_args="0"/>
+            <method name="GetArgument" num_args="1"/>
+        </methods>
+        <fields>
+            <field name="ArgumentCount" readonly="1"/>
+            <field name="Directory" readonly="1"/>
+        </fields>
+    </object>
 </builtins>
