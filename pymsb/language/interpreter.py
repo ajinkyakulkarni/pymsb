@@ -28,29 +28,46 @@ class Interpreter:
         self.array_parser = ArrayParser()
 
         self.__program_path = None
+        self.prog_args = []
 
-    def execute_code(self, code, args=[]):
-        """Executes the given Microsoft Small Basic code, given as a string."""
+    def execute_code(self, code, args=None, program_path=None):
+        """
+        Executes the given Microsoft Small Basic code, given as a string.
+
+        :param code: The string containing Microsoft Small Basic code.
+        :param args: A list of arguments to the Microsoft Small Basic program.
+        """
         self.__init_tk()
-        self.prog_args = args
+
+        if args is None:
+            self.prog_args = []
+        else:
+            self.prog_args = args
 
         self.statements = self.parser.parse(code)
         if self.statements:
             self.__scan_code()
-            self.__program_path = None
+            # FIXME: figure out how to get the directory here
+            self.__program_path = program_path
             self.__tk_root.after(1, self.__start_main_thread)
             self.__tk_root.mainloop()
         self._exit()
 
-    def execute_file(self, file_path, args=[]):
-        """Executes the given Microsoft Small Basic source code file."""
+    def execute_file(self, file_path, args=None):
+        """
+        Executes the given Microsoft Small Basic source code file.
+
+        :param file_path: The string path to a Microsoft Small Basic source code file.
+        :param args: A list of arguments to the Microsoft Small Basic program.
+        """
         with open(file_path) as code_file:
             code = code_file.read()
-            self.__program_path = code_file.name  # FIXME: figure out how to get the directory here
-            self.execute_code(code, args)
+            self.execute_code(code, args, code_file.name)
 
     @property
     def program_path(self):
+        if self.__program_path is None:
+            return ""
         return self.__program_path
 
     def __init_tk(self):
@@ -64,7 +81,7 @@ class Interpreter:
             "Text": modules.Text(),
             "Stack": modules.Stack(),
             "Network": modules.Network(),
-            "File": modules.FileModule(),
+            "File": modules.FileModule(self),
             "Desktop": modules.Desktop(self, self.__tk_root),
             "Array": modules.Array(self.array_parser),
             "Program": modules.Program(self),

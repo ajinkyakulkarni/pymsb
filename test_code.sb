@@ -35,8 +35,14 @@ TextWindow.WriteLine("------")
 TextWindow.WriteLine("Number of MSB args: " + Program.ArgumentCount)
 TextWindow.WriteLine("Program directory: " + Program.Directory)
 
+temp = File.GetTemporaryFilePath()
+TextWindow.WriteLine(temp)
+File.AppendContents(temp, "Simon")
+File.AppendContents(temp, "Tang")
+TextWindow.WriteLine(File.ReadContents(temp))
+
 While 1 = 1
-    TextWindow.WriteLine("Hello")
+    TextWindow.WriteLine("Hello, after pressing ENTER the program should terminate with exit code 0.")
     TextWindow.Pause()
     Program.End()
 EndWhile
