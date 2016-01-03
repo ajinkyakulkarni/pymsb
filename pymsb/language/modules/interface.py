@@ -43,7 +43,7 @@ class PyMsbWindow:
 
     @property
     def Top(self):
-        return str(self.get_geometry()[3])  # TODO: implement setter
+        return str(self.get_geometry()[3])
 
     @Top.setter
     def Top(self, top):

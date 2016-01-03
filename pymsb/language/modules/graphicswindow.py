@@ -64,7 +64,6 @@ class GraphicsWindow(PyMsbWindow):
     def CanResize(self, b):
         self.window.resizable(b, b)
 
-    # TODO: FontBold, FontItalic, FontName
     @property
     def FontBold(self):
         return self.__font_bold
@@ -261,6 +260,7 @@ class GraphicsWindow(PyMsbWindow):
             return "gray12"
         return ''  # TODO: figure out a blank stipple in case this is still called when alpha is 0
         # TODO: dynamically determine stipple based on colors involved
+        # TODO: make custom stipple bitmaps?
 
     def on_key_down(self, event):
         # TODO: implement the same text representation as MSB

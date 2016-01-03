@@ -1,7 +1,10 @@
 from pymsb.language import errors
 from pymsb.language.modules import utilities
 
-# TODO: look over all of these and see if I want line_number and if I should change these asts up
+# TODO: consolidate ASTs if necessary
+# TODO: refactor ASTs to ensure consistent constructor parameters, particularly with regard to line numbers and indices.
+# TODO: figure out ideal hierarchy of ASTs
+
 
 class Statement:
     """ An AST representing a standalone instruction that can be executed."""
@@ -57,19 +60,28 @@ class LiteralValue:
 
 
 class UserVariable:
-    """ An AST representing access to a square-bracket array via one or more dimensions."""
-    def __init__(self, variable_name, array_indices=[]):
+    """
+    An AST representing a reference to a user variable, optionally with square bracket notation.
+    :param variable_name: The string name of a variable in MSB.
+    :param array_indices: A list of
+    """
+
+    def __init__(self, variable_name, array_indices=None):
         """
         :param variable_name: The string representing the user variable that is used as a square-bracket array.
-        :param array_indices: A non-empty list of ASTs representing the index/indices to access the array.
+        :param array_indices: A list of ASTs representing the index/indices to access the array.
         """
         super().__init__()
         self.variable_name = variable_name
-        self.array_indices = array_indices
+        if array_indices is None:
+            self.array_indices = []
+        else:
+            self.array_indices = array_indices
 
     def __repr__(self):
         return "UserVariable<{0}{1}>".format(self.variable_name,
                                             "".join("[" + repr(i) + "]" for i in self.array_indices))
+
 
 class MsbObjectField:
     """ An AST representing a reference to a built-in Microsoft Small Basic object field.
@@ -232,4 +244,3 @@ class SubStatement(KeywordStatement):
 class EndSubStatement(KeywordStatement):
     def __init__(self, line_number):
         super().__init__(line_number, "EndSub")
-
