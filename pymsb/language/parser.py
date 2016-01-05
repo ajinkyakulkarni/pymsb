@@ -148,7 +148,6 @@ class Parser:
         :param allow_empty: If true, then an empty expression is valid.
         :return: An AST representing this expression.
         """
-        # FIXME: "and" and "or" are not supported yet.
 
         if not closing_braces:
             closing_braces = (None,)
@@ -194,13 +193,13 @@ class Parser:
             elif t.token_type == MsbToken.SYMBOL:
 
                 # either a built-in object field, or a built-in object function call, or a user variable
-                t2 = self.__get_token(1, MsbToken.DOT, MsbToken.OPERATOR, MsbToken.COMPARATOR, MsbToken.EQUALS,
-                                      MsbToken.L_PARENS, MsbToken.L_BRACKET, *closing_braces)
+                t2 = self.__get_token(1, MsbToken.DOT, MsbToken.OPERATOR, MsbToken.COMPARATOR, MsbToken.AND_OR,
+                                      MsbToken.EQUALS, MsbToken.L_PARENS, MsbToken.L_BRACKET, *closing_braces)
 
                 # just a user-defined variable.
                 if ((not t2) or
                         (t2.token_type in closing_braces) or
-                        (t2.token_type in (MsbToken.OPERATOR, MsbToken.EQUALS, MsbToken.COMPARATOR))):
+                        (t2.token_type in (MsbToken.OPERATOR, MsbToken.EQUALS, MsbToken.COMPARATOR, MsbToken.AND_OR))):
                     opd = ast.UserVariable(t.value)
                     self.token_index += 1
 
@@ -241,8 +240,8 @@ class Parser:
 
             # Find operator (maybe comparator) after the operand, or end of the expression
             if allow_comparators:
-                t = self.__get_token(0, MsbToken.OPERATOR, MsbToken.COMPARATOR, MsbToken.EQUALS, MsbToken.COMMA,
-                                     *closing_braces)
+                t = self.__get_token(0, MsbToken.OPERATOR, MsbToken.COMPARATOR, MsbToken.AND_OR, MsbToken.EQUALS,
+                                     MsbToken.COMMA, *closing_braces)
             else:
                 t = self.__get_token(0, MsbToken.OPERATOR, MsbToken.COMMA, *closing_braces)
 
@@ -258,15 +257,15 @@ class Parser:
         # Process into nested expression asts
         op_precedences = list("*/+-")
         if allow_comparators:
-            op_precedences += ["<", "<=", "=", ">=", ">", "<>"]
+            op_precedences += ["<", "<=", "=", ">=", ">", "<>", "and", "or"]
         for op_finding in op_precedences:
             while op_finding in expr_elements:
                 ind2 = expr_elements.index(op_finding)
                 left = expr_elements[ind2-1]
                 right = expr_elements[ind2+1]
-                if op_finding in "*/+-":
+                if op_finding.lower() in ("*", "/", "+", "-"):
                     expr_elements[ind2-1] = ast.Operation(op_finding, left, right)
-                else:
+                else:  # < <= = >= > <> and or
                     expr_elements[ind2-1] = ast.Comparison(op_finding, left, right)
                 del expr_elements[ind2]
                 del expr_elements[ind2]
@@ -522,7 +521,7 @@ class Parser:
                     stmt_ast.jump_target = sub_asts[name]
 
 
-class MsbToken:  # TODO:
+class MsbToken:
     """
     For internal use in Parser, in the tokenization process that happens before the tokens are parsed into statements.
     :param token_type: One of the static members defined below.
@@ -541,6 +540,7 @@ class MsbToken:  # TODO:
     COMMA = ","
     COLON = ":"
     COMPARATOR = "<=, >=, <, >, <>"
+    AND_OR = "and, or"
     OPERATOR = "+, -, *, /"
     EQUALS = "="  # Note: EQUALS can be assignment or comparator based on context, but token_type will always be EQUALS.
 
@@ -562,6 +562,7 @@ class MsbToken:  # TODO:
     regexes[R_PARENS] = "\)"
     regexes[L_BRACKET] = "\["
     regexes[R_BRACKET] = "]"
+    regexes[AND_OR] = "and|or"
     regexes[SYMBOL] = "[a-zA-Z_]\w*"
     # Notes on literals: strings have no escape codes.  Multiple leading "-" in numeric literals are ok.
     regexes[LITERAL] = ("-*\d+[.]?\d*"

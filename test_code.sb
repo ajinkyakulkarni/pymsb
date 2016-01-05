@@ -1,3 +1,23 @@
+if "True" And "False" then
+endif
+
+if (1 = 1) = (2 = 2) then
+    textwindow.writeline("yes")
+endif
+
+
+if 1 = 1 and 2 = 2 then
+    textwindow.writeline("yes")
+endif
+
+if 1 = 2 or 1 + 1 = 2 Then
+    Textwindow.WriteLine("yes")
+endif
+
+if 1 = 2 or 2 = 1 then
+    textwindow.writeline("no")
+endif
+
 q["Hello"] = "Simon" + " " + "Tang"
 q["_"]["__"] = "deep"
 TextWindow.WriteLine(q)

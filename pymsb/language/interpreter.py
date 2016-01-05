@@ -222,6 +222,10 @@ class Interpreter:
             return str(left == right)
         if comp == "<>":
             return str(left != right)
+        if comp.lower() == "and":
+            return str(str(left).lower() == "true" and str(right).lower() == "true")
+        if comp.lower() == "or":
+            return str(str(left).lower() == "true" or str(right).lower() == "true")
 
         # At this point, anything that is non-numerical is treated like 0
         left = modules.utilities.numericize(left, True)
