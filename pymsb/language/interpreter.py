@@ -114,14 +114,6 @@ class Interpreter:
         sys.exit(status)
 
     def _assign(self, destination_ast, value_ast, line_number=None):
-        # if isinstance(destination_ast, ast.UserVariable):
-        #     if isinstance(value_ast, ast.UserVariable):
-        #         '''if self.environment.is_subroutine(value_ast.variable_name):
-        #             raise errors.PyMsbSyntaxError(
-        #                 line_number, 0,
-        #                 "Subroutine '{0}' can only be assigned to an event.".format(value_ast.variable_name))
-        #     '''
-        #     self.environment.bind(destination_ast.variable_name, self._evaluate_expression_ast(value_ast))
 
         if isinstance(destination_ast, ast.UserVariable):
             # Assigning to variable as an array using one or more indices
@@ -129,6 +121,8 @@ class Interpreter:
                 array_string = self.environment.get_variable(destination_ast.variable_name)
                 index_values = [str(self._evaluate_expression_ast(index_ast)) for index_ast in destination_ast.array_indices]
                 value = str(self._evaluate_expression_ast(value_ast))
+
+                # TODO: raise error when trying to assign to a subroutine name or subroutine call.
 
                 new_array_string = self.array_parser.set_value(array_string, index_values, value)
                 self.environment.bind(destination_ast.variable_name, new_array_string)
@@ -138,19 +132,20 @@ class Interpreter:
                 self.environment.bind(destination_ast.variable_name, self._evaluate_expression_ast(value_ast))
 
         if isinstance(destination_ast, ast.MsbObjectField):
-            # Check if this is a field or an event
-            if modules.utilities.msb_event_exists(destination_ast.msb_object,
-                                          destination_ast.msb_object_field_name):
-                # Must be assigning to a subroutine
-                sub_name = value_ast.variable_name
-                '''if self.environment.is_subroutine(sub_name):
-                    self._assign_msb_event(destination_ast.msb_object,
-                                          destination_ast.msb_object_field_name,
-                                          sub_name)'''
+            msb_object = self.msb_objects[modules.utilities.capitalize(destination_ast.msb_object)]
+            member_name = modules.utilities.capitalize(destination_ast.msb_object_field_name)
+
+            # Determine if this is a function or an event
+            info = modules.utilities.get_msb_builtin_info(destination_ast.msb_object, member_name)
+            if info.type == "event":
+                # msb_object.set_event(member_name, value_ast.variable_name)
+                pass  # TODO: implement event support
+
             else:
-                self._assign_msb_object_field(destination_ast.msb_object,
-                                             destination_ast.msb_object_field_name,
-                                             self._evaluate_expression_ast(value_ast))
+                value = str(self._evaluate_expression_ast(value_ast))
+                setattr(msb_object,
+                        member_name,
+                        value)
 
     def _increment_value(self, var_ast):
         # Increments the variable that has the given name by 1.  If not defined, this defines var_name to be 1.
@@ -203,13 +198,6 @@ class Interpreter:
 
     def _evaluate_object_field(self, obj_name, field_name):
         return getattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name))
-
-    def _assign_msb_object_field(self, obj_name, field_name, arg_value):
-        setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(field_name), str(arg_value))
-
-    def _assign_msb_event(self, obj_name, event_name, sub_name):
-        # TODO: implement the event things
-        setattr(self.msb_objects[modules.utilities.capitalize(obj_name)], modules.utilities.capitalize(event_name), sub_name)
 
     def _evaluate_comparison(self, comp, left, right):
         # returns "True" or "False" - VERY IMPORTANT NOTE: returns the strings and not boolean values.

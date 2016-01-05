@@ -1,5 +1,6 @@
-<!-- the field readonly field must be omitted or empty if the field is not read-only -->
+<!-- the field read_only field must be omitted or empty if the field is not read-only -->
 <!-- TODO: add information on which functions return values and which don't -->
+<!-- TODO: add XML schema? -->
 
 <builtins>
     <object name="TextWindow">
@@ -58,11 +59,11 @@
             <field name="FontName"/>
             <field name="FontSize"/>
             <field name="Height"/>
-            <field name="LastKey" readonly="1"/>
-            <field name="LastText" readonly="1"/>
+            <field name="LastKey" read_only="1"/>
+            <field name="LastText" read_only="1"/>
             <field name="Left"/>
-            <field name="MouseX" readonly="1"/>
-            <field name="MouseY" readonly="1"/>
+            <field name="MouseX" read_only="1"/>
+            <field name="MouseY" read_only="1"/>
             <field name="PenColor"/>
             <field name="PenWidth"/>
             <field name="Title"/>
@@ -80,22 +81,22 @@
     </object>
     <object name="Clock">
         <fields>
-            <field name="Date" readonly="1"/>
-            <field name="Day" readonly="1"/>
-            <field name="ElapsedMilliseconds" readonly="1"/>
-            <field name="Hour" readonly="1"/>
-            <field name="Millisecond" readonly="1"/>
-            <field name="Minute" readonly="1"/>
-            <field name="Month" readonly="1"/>
-            <field name="Second" readonly="1"/>
-            <field name="Time" readonly="1"/>
-            <field name="WeekDay" readonly="1"/>
-            <field name="Year" readonly="1"/>
+            <field name="Date" read_only="1"/>
+            <field name="Day" read_only="1"/>
+            <field name="ElapsedMilliseconds" read_only="1"/>
+            <field name="Hour" read_only="1"/>
+            <field name="Millisecond" read_only="1"/>
+            <field name="Minute" read_only="1"/>
+            <field name="Month" read_only="1"/>
+            <field name="Second" read_only="1"/>
+            <field name="Time" read_only="1"/>
+            <field name="WeekDay" read_only="1"/>
+            <field name="Year" read_only="1"/>
         </fields>
     </object>
     <object name="Math">
         <fields>
-            <field name="Pi" readonly="1"/>
+            <field name="Pi" read_only="1"/>
         </fields>
         <methods>
             <method name="Abs" num_args="1"/>
@@ -175,8 +176,8 @@
             <method name="SetWallpaper" num_args="1"/>
         </methods>
         <fields>
-            <field name="Height" readonly="1"/>
-            <field name="Width" readonly="1"/>
+            <field name="Height" read_only="1"/>
+            <field name="Width" read_only="1"/>
         </fields>
     </object>
     <object name="Array">
@@ -199,8 +200,8 @@
             <method name="GetArgument" num_args="1"/>
         </methods>
         <fields>
-            <field name="ArgumentCount" readonly="1"/>
-            <field name="Directory" readonly="1"/>
+            <field name="ArgumentCount" read_only="1"/>
+            <field name="Directory" read_only="1"/>
         </fields>
     </object>
 </builtins>

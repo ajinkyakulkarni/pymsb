@@ -90,7 +90,7 @@ class TextWindow(PyMsbWindow):
 
     def prepare_color_tags(self):
         # Prepare all the color tags for text
-        for name, val in py_msb_utils.color_parser["TextWindow"].items():
+        for name, val in py_msb_utils.get_textwindow_colors().items():
             name = py_msb_utils.capitalize_text_color(name)
             self.text_box.tag_configure("foreground_" + name, foreground=val)
             self.text_box.tag_configure("background_" + name, background=val)
@@ -121,7 +121,7 @@ class TextWindow(PyMsbWindow):
     @property
     def BackgroundColor(self):
         code = self.__background_color
-        for key, val in py_msb_utils.color_parser["TextWindow"].items():
+        for key, val in py_msb_utils.get_textwindow_colors().items():
             if code == val:
                 return py_msb_utils.capitalize_text_color(key)
 
@@ -136,7 +136,7 @@ class TextWindow(PyMsbWindow):
     @property
     def ForegroundColor(self):
         code = self.text_box["insertbackground"].upper()
-        for key, val in py_msb_utils.color_parser["TextWindow"].items():
+        for key, val in py_msb_utils.get_textwindow_colors().items():
             if code == val:
                 return py_msb_utils.capitalize_text_color(key)
 

@@ -1,4 +1,5 @@
 # TODO: flesh out these errors
+# TODO: really clean up the error system and make consistent initializers and define a better hierarchy of errors
 
 
 class PyMsbSyntaxError(Exception):
@@ -46,3 +47,8 @@ class PyMsbMalformedArrayError(PyMsbRuntimeError):
         super().__init__()
         self.array_name = array_name
         self.array_value = array_value
+
+
+class PyMsbMissingObjectError(PyMsbSyntaxError):
+    def __init__(self, line_number, line_index, obj_name):
+        super().__init__(line_number, line_index, "Cannot find object '{}'.".format(obj_name))

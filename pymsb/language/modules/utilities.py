@@ -1,82 +1,106 @@
+from collections import namedtuple
 import xml.etree.ElementTree as ET
-import itertools
 import pkg_resources
 from configparser import ConfigParser, ExtendedInterpolation
 
+
 # Load list of built-in methods, fields, events
-# TODO: worry about what variables are being exported
-# TODO: decide if this is too ugly/hacky
-msb_builtins_path = pkg_resources.resource_string(__name__, "msb_builtins.xml")
-root = ET.fromstring(msb_builtins_path)
+def __load_msb_builtins_information():
+    global __obj_infos, __msb_capitalizations
+    msb_builtins_path = pkg_resources.resource_string(__name__, "msb_builtins.xml")
+    root = ET.fromstring(msb_builtins_path)
 
-obj_infos = {}
-for child in root:
-    obj_info = {"methods": dict(), "fields": dict(), "events": set()}
-    m = child.find("methods")
-    if m is not None:
-        for method in m:
-            name = method.get("name")
-            num_args = int(method.get("num_args", 0))
-            obj_info["methods"][name] = num_args
-    f = child.find("fields")
-    if f is not None:
-        for field in f:
-            name = field.get("name")
-            readonly = bool(field.get("readonly", False))  # if readonly is any non-empty string, then is read-only
-            obj_info["fields"][name] = readonly
-    e = child.find("events")
-    if e is not None:
-        for event in e:
-            obj_info["events"].add(event.get("name"))
-    obj_infos[child.get("name")] = obj_info
+    # Map properly-capitalized MSB object names to a dict that maps properly-capitalized member names to NamedTuples.
+    __obj_infos = dict()
+    # Store the proper capitalization for every built-in object, function, event and field name
+    __msb_capitalizations = dict()
 
-# Load named colours
-color_parser = ConfigParser(interpolation=ExtendedInterpolation(), comment_prefixes=(";",))
-color_parser.read(pkg_resources.resource_filename(__name__, "colors.ini"))
-text_colors = color_parser["TextWindow"]
-graphic_colors = color_parser["GraphicWindow"]
+    MsbFunction = namedtuple('MsbFunction', ['name', 'num_args', 'returns_value'])
+    MsbField = namedtuple('MsbField', ['name', 'read_only'])
+    MsbEvent = namedtuple('MsbEvent', ['name'])
+
+    for object_element in root:
+        object_name = object_element.get("name")
+        obj_info = dict()
+        m = object_element.find("methods")
+        if m is not None:
+            for method_element in m:
+                name = method_element.get("name")
+                num_args = int(method_element.get("num_args", 0))
+                returns_value = method_element.get("returns_value", "").lower() in ("1", "true")
+                obj_info[name] = MsbFunction(name, num_args, returns_value)
+                __msb_capitalizations[name.lower()] = name
+
+        f = object_element.find("fields")
+        if f is not None:
+            for field_element in f:
+                name = field_element.get("name")
+                read_only = field_element.get("read_only", "").lower() in ("1", "true")
+                obj_info[name] = MsbField(name, read_only)
+                __msb_capitalizations[name.lower()] = name
+
+        e = object_element.find("events")
+        if f is not None:
+            for event_element in e:
+                name = event_element.get("name")
+                obj_info[name] = MsbEvent(name)
+                __msb_capitalizations[name.lower()] = name
+        __obj_infos[object_name] = obj_info
+
+__load_msb_builtins_information()
 
 
-# Helper functions
-def get_msb_method_args(obj_name, method_name):
-    for o_name, info in obj_infos.items():
-        if o_name.lower() == obj_name.lower():
-            for m_name, num_args in info["methods"].items():
-                if m_name.lower() == method_name.lower():
-                    return num_args
-    return None
+# Load list of named colors
+def __load_named_colors():
+    global __text_colors, __graphic_colors
+    __color_parser = ConfigParser(interpolation=ExtendedInterpolation(), comment_prefixes=(";",))
+    __color_parser.read(pkg_resources.resource_filename(__name__, "colors.ini"))
+    __text_colors = __color_parser["TextWindow"]
+    __graphic_colors = __color_parser["GraphicWindow"]
+__load_named_colors()
 
 
-def get_msb_field_readonly(obj_name, field_name):
+# Helper function definitions
+
+def get_textwindow_colors():
+    """Get a dict mapping color names to color codes that are supported by TextWindow."""
+    return __text_colors
+
+
+def get_graphicwindow_colors():
+    """Get a dict mapping color names to color codes that are supported by GraphicWindow."""
+    return __graphic_colors
+
+
+def msb_builtin_object_exists(obj_name):
+    return capitalize(obj_name) in __obj_infos
+
+
+def get_msb_builtin_info(obj_name, member_name):
     """
-    :param obj_name: The name of an MSB object.
-    :param field_name: The name of an MSB field.
-    :return: True if the given field is read-only, False if the given field is not read-only
+    Returns a NamedTuple containing information about the specified MSB built-in, or None if the object does not exist.
+
+    If the specified built-in is a function, then the NamedTuple contains fields name, type, num_args and returns_value.
+    If the specified built-in is a field, then the NamedTuple contains fields name, type and read_only.
+    If the specified built-in is a event, then the NamedTuple contains the field name.
+
+    The field "type" is one of "function", "field" or "event".
+
+    :param obj_name: A case-insensitive string to specify an MSB object.
+    :param member_name: A case-insensitive string to specify an MSB object's member (field, event or function)
+    :return: A NamedTuple containing information about the specified MSB built-in, or None if the object does not exist.
     """
-    for o_name, info in obj_infos.items():
-        if o_name.lower() == obj_name.lower():
-            for f_name, readonly in info["fields"].items():
-                if f_name.lower() == field_name.lower():
-                    return readonly
-    return None  # TODO: add the check and corresponding errors for when the object or member don't exist
 
-
-def msb_event_exists(obj_name, event_name):
-    for o_name, info in obj_infos.items():
-        if o_name.lower() == obj_name.lower():
-            for e_name in info["events"]:
-                if e_name.lower() == event_name.lower():
-                    return True
-    return False
+    obj_name, member_name = capitalize(obj_name), capitalize(member_name)
+    return __obj_infos.get(obj_name, {}).get(member_name, None)
 
 
 def capitalize(msb_name):
-    for o_name, info in obj_infos.items():
+    """Returns the properly-capitalized version of the given name for a MSB object, function, field or event."""
+    for o_name, info in __obj_infos.items():
         if o_name.lower() == msb_name.lower():
             return o_name
-        for name in itertools.chain(info["methods"].keys(),
-                                    info["fields"].keys(),
-                                    info["events"]):
+        for name in info:
             if name.lower() == msb_name.lower():
                 return name
     return None
@@ -117,15 +141,14 @@ def translate_textwindow_color(col, default_color):
     :return: The name of a named color corresponding to the given index or name, or default_color if invalid.
     """
     try:
-        return list(color_parser["TextWindow"].values())[int(float(col))]
+        return list(get_textwindow_colors().values())[int(float(col))]
     except IndexError:
         return default_color
     except ValueError:
         try:
-            return color_parser["TextWindow"][col.lower()].lower()
+            return get_textwindow_colors()[col.lower()].lower()
         except KeyError:
             return default_color
-    return default_color
 
 
 def translate_color(code, default_color):
@@ -141,7 +164,7 @@ def translate_color(code, default_color):
         return 0, "#000000"
     col = code[1:]
     try:
-        return 255, color_parser["GraphicWindow"][code.lower()]
+        return 255, get_graphicwindow_colors()[code.lower()]
     except KeyError:
         for digit in col:
             if digit not in "0123456789abcdefABCDEF":
@@ -164,7 +187,7 @@ def translate_color(code, default_color):
         return alpha, color
 
 
-# TODO: use numerical_args throughout this project
+# TODO: use numerical_args throughout the MSB modules
 def numerical_args(method):
     """
     :param method: A method of a class that needs its arguments to be converted into numerical values

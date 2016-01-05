@@ -107,16 +107,6 @@ class MsbObjectFunctionCall(Statement):
         self.msb_object_function = msb_object_function
         self.parameter_asts = parameter_asts
 
-        # Check for existence of function and correct number of arguments
-        num_args = utilities.get_msb_method_args(msb_object, msb_object_function)
-        if num_args is None:
-            raise errors.PyMsbRuntimeError("{0} not in {1}".format(msb_object_function,
-                                                                   msb_object))
-        if num_args != len(parameter_asts):
-            raise errors.PyMsbRuntimeError(
-                "Operation '{0}.{1}' is supplied {2} arguments, but takes {3} arguments."
-                .format(msb_object, msb_object_function, len(parameter_asts), num_args))
-
     def __repr__(self):
         s = ",".join(map(repr, self.parameter_asts))
         return "MsbObjectFunctionCall<{0}.{1}({2})>".format(self.msb_object,
