@@ -49,4 +49,4 @@ class Text:
         return str(subt in t)
 
     def StartsWith(self, t, subt):
-        return str(subt.startswith(subt))
+        return str(t.startswith(subt))
