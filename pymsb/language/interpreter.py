@@ -1,3 +1,4 @@
+import os
 import sys
 import tkinter as tk
 import threading
@@ -47,8 +48,10 @@ class Interpreter:
         self.statements = self.parser.parse(code)
         if self.statements:
             self.__scan_code()
-            # FIXME: figure out how to get the directory here
-            self.__program_path = program_path
+            if program_path:
+                self.__program_path = os.path.dirname(program_path)
+            else:
+                self.__program_path = ""
             self.__tk_root.after(1, self.__start_main_thread)
             self.__tk_root.mainloop()
         self._exit()
@@ -66,8 +69,8 @@ class Interpreter:
 
     @property
     def program_path(self):
-        if self.__program_path is None:
-            return ""
+        """Returns the path of the directory containing the currently executing script, or the empty string if there is
+        no currently executing script or the script is being executed from a string."""
         return self.__program_path
 
     def __init_tk(self):
@@ -111,7 +114,7 @@ class Interpreter:
     def _exit(self, status=None):
         # TODO: make this able to close all running interpreter threads
         self.__tk_root.quit()
-        sys.exit(status)
+        self.__program_path = ""
 
     def _assign(self, destination_ast, value_ast, line_number=None):
 
@@ -258,9 +261,6 @@ class Environment:
 
     def get_variable(self, var):
         return self.variable_bindings.setdefault(var.lower(), "")
-
-    def is_array(self, var):
-        return False  # TODO: implement Environment.is_array
 
 
 # noinspection PyProtectedMember
