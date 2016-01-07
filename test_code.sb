@@ -1,3 +1,11 @@
+if Text.Append("", "") <> "" Then
+    textwindow.writeline("this is wrong.")
+endif
+
+while Text.Append("", "") <> ""
+    textwindow.writeline("this is wrong.")
+endwhile
+
 if "True" And "False" then
 endif
 
@@ -73,6 +81,19 @@ Sub sayhi
     TextWindow.WriteLine("Hi " + i)
     i = i + 1
 EndSub
+
+for x = 100 to 60
+for y = 1 to 60
+mouse.mousex = x * 10
+mouse.mousey = y * 10
+endfor
+endfor
+
+While Mouse.IsLeftButtonDown <> "True"
+    textwindow.title = "waiting..." + Mouse.IsLeftButtonDown
+    Textwindow.read()
+endwhile
+textwindow.title = "done waiting for a left click"
 
 While 1 = 1
     TextWindow.WriteLine("Hello, after pressing ENTER the program should terminate with exit code 0.")

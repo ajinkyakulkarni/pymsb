@@ -88,6 +88,7 @@ class Interpreter:
             "Array": modules.Array(self),
             "Program": modules.Program(self),
             "Timer": modules.Timer(self),
+            "Mouse": modules.Mouse(self),
         }
 
         self.__threads = []

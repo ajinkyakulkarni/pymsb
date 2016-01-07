@@ -216,4 +216,16 @@
             <event name="Tick"/>
         </events>
     </object>
+    <object name="Mouse">
+        <methods>
+            <method name="HideCursor" num_args="0"/>
+            <method name="ShowCursor" num_args="0"/>
+        </methods>
+        <fields>
+            <field name="MouseX" read_only="0"/>
+            <field name="MouseY" read_only="0"/>
+            <field name="IsLeftButtonDown" read_only="1"/>
+            <field name="IsRightButtonDown" read_only="1"/>
+        </fields>
+    </object>
 </builtins>
