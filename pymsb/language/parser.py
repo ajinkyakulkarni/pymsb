@@ -222,7 +222,11 @@ class Parser:
                 # Is a built-in of some kind.  Check if fn call, or to-in field value access, or invalid
                 elif t2.token_type == MsbToken.DOT:
                     field_token = self.__get_token(2, MsbToken.SYMBOL)
-                    action_token = self.__get_token(3, MsbToken.L_PARENS, MsbToken.OPERATOR, *closing_braces)
+                    if allow_comparators:
+                        action_token = self.__get_token(3, MsbToken.L_PARENS, MsbToken.OPERATOR, MsbToken.COMPARATOR,
+                                                        MsbToken.EQUALS, *closing_braces)
+                    else:
+                        action_token = self.__get_token(3, MsbToken.L_PARENS, MsbToken.OPERATOR, *closing_braces)
 
                     # fn call
                     if action_token is not None and action_token.token_type == MsbToken.L_PARENS:
