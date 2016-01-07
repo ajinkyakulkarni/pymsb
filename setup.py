@@ -11,6 +11,7 @@ def find_pyuserinput_requirements():
         return ["pyobjc-framework-Quartz", "AppKit"]
     if plat == "Linux":
         return ["python3-xlib"]
+    return []
 
 setup(name='pymsb',
       author='Simon Tang',
