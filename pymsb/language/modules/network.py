@@ -1,9 +1,10 @@
 import requests
 import tempfile
+from pymsb.language.modules.pymsbmodule import PyMsbModule
 
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class Network:
+class Network(PyMsbModule):
     def DownloadFile(self, url):
         response = self.get_response(url)
         if not response:

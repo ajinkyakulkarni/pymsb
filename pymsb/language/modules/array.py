@@ -1,15 +1,17 @@
+from pymsb.language.modules.pymsbmodule import PyMsbModule
+
+
 # noinspection PyPep8Naming
-
-
-class Array:
+class Array(PyMsbModule):
     '''
     The implementation of the MSB Array module.
     GetValue, RemoveValue and SetValue appear to be deprecated, in favour of using square-bracket arrays.
     The remaining methods in the Array module are separate from GetValue, RemoveValue, and SetValue and operate on
     square-bracket arrays.
     '''
-    def __init__(self, array_parser):
-        self.array_parser = array_parser
+    def __init__(self, interpreter):
+        super().__init__(interpreter)
+        self.array_parser = interpreter.array_parser
 
         # For GetValue, RemoveValue and SetValue.
         self.internal_arrays = {}

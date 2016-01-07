@@ -1,6 +1,8 @@
 import math
 import random
 import pymsb.language.modules
+from pymsb.language.modules.pymsbmodule import PyMsbModule
+
 
 def math_wrapper(func):
     return lambda self, *args: str(func(*(map(pymsb.language.modules.utilities.numericize, args))))
@@ -9,7 +11,7 @@ def math_wrapper(func):
 
 
 # noinspection PyPep8Naming
-class Math:
+class Math(PyMsbModule):
     """
     The implementation of the MSB Math module.
     """

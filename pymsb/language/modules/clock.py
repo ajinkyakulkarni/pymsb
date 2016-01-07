@@ -1,9 +1,10 @@
 from datetime import datetime as dt
 import time
+from pymsb.language.modules.pymsbmodule import PyMsbModule
 
 
 # noinspection PyPep8Naming
-class Clock:
+class Clock(PyMsbModule):
     @property
     def Date(self):
         return dt.now().strftime("%m/%d/%Y")

@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+from pymsb.language.modules.pymsbmodule import PyMsbModule
 
 
 def file_method(func):
@@ -29,15 +30,9 @@ def file_method(func):
 
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class FileModule:
-    """
-    The implementation of the MSB File module.
-
-    :param interpreter: The interpreter being used to execute this instance of PyMSB.
-    """
-
+class FileModule(PyMsbModule):
     def __init__(self, interpreter):
-        self.interpreter = interpreter
+        super().__init__(interpreter)
         self.array_parser = interpreter.array_parser
         self.__last_error = ""
 

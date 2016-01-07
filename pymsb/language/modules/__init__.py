@@ -1,3 +1,4 @@
+from pymsb.language.modules.pymsbmodule import PyMsbModule
 from pymsb.language.modules import utilities
 from pymsb.language.modules.clock import Clock
 from pymsb.language.modules.textwindow import TextWindow

@@ -1,6 +1,10 @@
+from pymsb.language.modules.pymsbmodule import PyMsbModule
+
+
 # noinspection PyPep8Naming
-class Desktop:
+class Desktop(PyMsbModule):
     def __init__(self, interpreter, root):
+        super().__init__(interpreter)
         self.interpreter = interpreter
         self.root = root
 

@@ -1,17 +1,9 @@
 import tempfile
 import time
-
+from pymsb.language.modules.pymsbmodule import PyMsbModule
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class Program:
-    """
-    The implementation of the MSB Program module.
-    :param interpreter: The interpreter used to execute this instance of PyMSB.
-    """
-
-    def __init__(self, interpreter):
-        self.interpreter = interpreter
-
+class Program(PyMsbModule):
     @property
     def ArgumentCount(self):
         """

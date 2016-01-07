@@ -1,14 +1,15 @@
 import re
 import tkinter as tk
 from pymsb.language.modules import utilities
+from pymsb.language.modules.pymsbmodule import PyMsbModule
 
 __author__ = 'Simon Tang'
 
 
 # noinspection PyPep8Naming
-class PyMsbWindow:
+class PyMsbWindow(PyMsbModule):
     def __init__(self, interpreter, root):
-        self.interpreter = interpreter
+        super().__init__(interpreter)
         self.root = root
         self.window = tk.Toplevel(root)
         self.hide()

@@ -76,18 +76,18 @@ class Interpreter:
         self.__tk_root = tk.Tk()
         self.__tk_root.withdraw()
         self.msb_objects = {
-            "Clock": modules.Clock(),
-            "Math": modules.Math(),
+            "Clock": modules.Clock(self),
+            "Math": modules.Math(self),
             "TextWindow": modules.TextWindow(self, self.__tk_root),
             "GraphicsWindow": modules.GraphicsWindow(self, self.__tk_root),
-            "Text": modules.Text(),
-            "Stack": modules.Stack(),
-            "Network": modules.Network(),
+            "Text": modules.Text(self),
+            "Stack": modules.Stack(self),
+            "Network": modules.Network(self),
             "File": modules.FileModule(self),
             "Desktop": modules.Desktop(self, self.__tk_root),
-            "Array": modules.Array(self.array_parser),
+            "Array": modules.Array(self),
             "Program": modules.Program(self),
-            "Timer": modules.Timer(self)
+            "Timer": modules.Timer(self),
         }
 
         self.__threads = []

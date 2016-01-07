@@ -1,5 +1,8 @@
+from pymsb.language.modules.pymsbmodule import PyMsbModule
+
+
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class Text:
+class Text(PyMsbModule):
     def Append(self, t1, t2):
         return t1 + t2
 
