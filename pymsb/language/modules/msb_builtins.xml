@@ -204,4 +204,16 @@
             <field name="Directory" read_only="1"/>
         </fields>
     </object>
+    <object name="Timer">
+        <methods>
+            <method name="Pause" num_args="0"/>
+            <method name="Resume" num_args="0"/>
+        </methods>
+        <fields>
+            <field name="Interval" read_only="False"/>
+        </fields>
+        <events>
+            <event name="Tick"/>
+        </events>
+    </object>
 </builtins>

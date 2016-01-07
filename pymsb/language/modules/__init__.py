@@ -10,5 +10,6 @@ from pymsb.language.modules.file import FileModule
 from pymsb.language.modules.desktop import Desktop
 from pymsb.language.modules.array import Array
 from pymsb.language.modules.program import Program
+from pymsb.language.modules.timer import Timer
 
 __author__ = 'Simon Tang'

@@ -15,9 +15,9 @@ def __load_msb_builtins_information():
     # Store the proper capitalization for every built-in object, function, event and field name
     __msb_capitalizations = dict()
 
-    MsbFunction = namedtuple('MsbFunction', ['name', 'num_args', 'returns_value'])
-    MsbField = namedtuple('MsbField', ['name', 'read_only'])
-    MsbEvent = namedtuple('MsbEvent', ['name'])
+    MsbFunction = namedtuple('MsbFunction', ['name', 'type', 'num_args', 'returns_value'])
+    MsbField = namedtuple('MsbField', ['name', 'type', 'read_only'])
+    MsbEvent = namedtuple('MsbEvent', ['name', 'type'])
 
     for object_element in root:
         object_name = object_element.get("name")
@@ -28,7 +28,7 @@ def __load_msb_builtins_information():
                 name = method_element.get("name")
                 num_args = int(method_element.get("num_args", 0))
                 returns_value = method_element.get("returns_value", "").lower() in ("1", "true")
-                obj_info[name] = MsbFunction(name, num_args, returns_value)
+                obj_info[name] = MsbFunction(name, "function", num_args, returns_value)
                 __msb_capitalizations[name.lower()] = name
 
         f = object_element.find("fields")
@@ -36,14 +36,14 @@ def __load_msb_builtins_information():
             for field_element in f:
                 name = field_element.get("name")
                 read_only = field_element.get("read_only", "").lower() in ("1", "true")
-                obj_info[name] = MsbField(name, read_only)
+                obj_info[name] = MsbField(name, "field", read_only)
                 __msb_capitalizations[name.lower()] = name
 
         e = object_element.find("events")
-        if f is not None:
+        if e is not None:
             for event_element in e:
                 name = event_element.get("name")
-                obj_info[name] = MsbEvent(name)
+                obj_info[name] = MsbEvent(name, "event")
                 __msb_capitalizations[name.lower()] = name
         __obj_infos[object_name] = obj_info
 
@@ -57,6 +57,7 @@ def __load_named_colors():
     __color_parser.read(pkg_resources.resource_filename(__name__, "colors.ini"))
     __text_colors = __color_parser["TextWindow"]
     __graphic_colors = __color_parser["GraphicWindow"]
+
 __load_named_colors()
 
 
@@ -84,7 +85,7 @@ def get_msb_builtin_info(obj_name, member_name):
     If the specified built-in is a field, then the NamedTuple contains fields name, type and read_only.
     If the specified built-in is a event, then the NamedTuple contains the field name.
 
-    The field "type" is one of "function", "field" or "event".
+    The "type" field is one of "function", "field" or "event".
 
     :param obj_name: A case-insensitive string to specify an MSB object.
     :param member_name: A case-insensitive string to specify an MSB object's member (field, event or function)

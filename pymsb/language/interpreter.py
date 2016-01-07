@@ -1,8 +1,6 @@
 import os
-import sys
 import tkinter as tk
 import threading
-import time
 
 import pymsb.language.abstractsyntaxtrees as ast
 import pymsb.language.errors as errors
@@ -30,6 +28,7 @@ class Interpreter:
 
         self.__program_path = None
         self.prog_args = []
+        self.__subroutine_body_locations = {}
 
     def execute_code(self, code, args=None, program_path=None):
         """
@@ -47,7 +46,7 @@ class Interpreter:
 
         self.statements = self.parser.parse(code)
         if self.statements:
-            self.__scan_code()
+            self.__scan_statements()
             if program_path:
                 self.__program_path = os.path.dirname(program_path)
             else:
@@ -88,18 +87,29 @@ class Interpreter:
             "Desktop": modules.Desktop(self, self.__tk_root),
             "Array": modules.Array(self.array_parser),
             "Program": modules.Program(self),
+            "Timer": modules.Timer(self)
         }
 
         self.__threads = []
 
-    def __scan_code(self):
-        pass  # TODO: remove if not used
+    def __scan_statements(self):
+        # Save the line numbers for each subroutine body
+        self.__subroutine_body_locations.clear()
+        for line_number, statement in enumerate(self.statements):
+            if isinstance(statement, ast.SubStatement):
+                self.__subroutine_body_locations[statement.sub_name.lower()] = line_number + 1
 
     def __start_main_thread(self):
         p = InterpreterThread(self, 0)
         self.__threads.append(p)
         p.start()
         self.__tk_root.after(1, self.__check_threads_finished)
+
+    def _call_subroutine_in_new_thread(self, sub_name):
+        line_number = self.__subroutine_body_locations[sub_name.lower()]
+        p = InterpreterThread(self, line_number)
+        self.__threads.append(p)
+        p.start()
 
     def __check_threads_finished(self):
         for thread in self.__threads[:]:
@@ -141,9 +151,7 @@ class Interpreter:
             # Determine if this is a function or an event
             info = modules.utilities.get_msb_builtin_info(destination_ast.msb_object, member_name)
             if info.type == "event":
-                # msb_object.set_event(member_name, value_ast.variable_name)
-                pass  # TODO: implement event support
-
+                msb_object.set_event_sub(member_name, value_ast.variable_name)
             else:
                 value = str(self._evaluate_expression_ast(value_ast))
                 setattr(msb_object,
@@ -297,6 +305,7 @@ class InterpreterThread(threading.Thread):
                 self.line_number += 1
 
         elif isinstance(statement, ast.SubroutineCall):
+            # Save the current line number, temporarily jump to the body of the called subroutine.
             self.sub_return_locations.append(self.line_number)
             self.line_number = self.statements.index(statement.jump_target)
 
