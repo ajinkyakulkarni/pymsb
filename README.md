@@ -4,7 +4,7 @@ An open-source, cross-platform interpreter for the Microsoft Small Basic languag
 The goal is to create a more stable and bug-free implementation of the language than Microsoft's proprietary IDE, that will work in Windows, Mac OS X and Linux (Ubuntu, at the very least).  Currently, the interpreter works for a subset of the language features, with the most notable omission being multimedia support.
 
 ## Installation
-PyMSB is currently being tested on Windows 7 and Linux Mint.  Mac OS X support will come in the future, after PyMSB development is feature-complete on Windows and Linux.
+PyMSB is currently being tested on Windows 7 and Linux Mint.  Mac OS X testing will come in the future, after PyMSB development is at least feature-complete on Windows and Linux.
 
 1. Install Python 3.  
  * On Linux, use the command `sudo apt-get install python3` in the terminal.
@@ -15,4 +15,4 @@ PyMSB is currently being tested on Windows 7 and Linux Mint.  Mac OS X support w
 ## Future
 Efficiency.
 
-Eventually, Small Basic could become a subset of another language that supports features like function arguments.  This future language is tentatively named Small _Medium_.
+Eventually, Small Basic could become a subset of another language that supports features like function arguments.  This future language is tentatively named _Small Medium_.
