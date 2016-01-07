@@ -48,7 +48,7 @@ class Interpreter:
         if self.statements:
             self.__scan_statements()
             if program_path:
-                self.__program_path = os.path.dirname(program_path)
+                self.__program_path = os.path.join(os.path.dirname(program_path), '')  # .join to ensure trailing slash
             else:
                 self.__program_path = ""
             self.__tk_root.after(1, self.__start_main_thread)
