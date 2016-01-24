@@ -73,7 +73,7 @@ TextWindow.WriteLine("Sin of pi/4 is " + Math.Sin(Math.Pi/4))
 TextWindow.WriteLine("Square of Sin of pi/4 is " + Math.Power(Math.Sin(Math.Pi/4), 2))
 
 Timer.Interval = 1000
-Timer.Resume()
+'Timer.Resume()
 
 Timer.Tick = sayhi
 
@@ -82,18 +82,21 @@ Sub sayhi
     i = i + 1
 EndSub
 
-for x = 100 to 60
+for x = 10 to 60
 for y = 1 to 60
 mouse.mousex = x * 10
 mouse.mousey = y * 10
 endfor
 endfor
 
-While Mouse.IsLeftButtonDown <> "True"
-    textwindow.title = "waiting..." + Mouse.IsLeftButtonDown
-    Textwindow.read()
-endwhile
-textwindow.title = "done waiting for a left click"
+if 0 = 1 then
+    While Mouse.IsLeftButtonDown <> "True"
+        textwindow.title = "waiting..." + Mouse.IsLeftButtonDown
+        Textwindow.read()
+    endwhile
+    textwindow.title = "done waiting for a left click"
+endif
+
 
 While 1 = 1
     TextWindow.WriteLine("Hello, after pressing ENTER the program should terminate with exit code 0.")

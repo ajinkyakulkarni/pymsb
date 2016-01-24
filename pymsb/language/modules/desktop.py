@@ -32,37 +32,52 @@ class Desktop(PyMsbModule):
 
         plat = platform.system()
         if plat == "Windows":
-            # TODO: implement SetWallpaper for Windows.
+            # TODO: implement SetWallpaper for Windows; I couldn't get the ctypes code samples to work on my VM.
+            # old_path = ?
+            # file_path = self.__get_file_path(path_or_url)
+            # if file_path:
+            #     setwallpaper with file_path
             pass
-        if plat == "Darwin":  # This is actually Mac OS X.
+
+        elif plat == "Darwin":  # This is actually Mac OS X.
             # TODO: implement SetWallpaper for Mac OS X.
+            # old_path = ?
+            # file_path = self.__get_file_path(path_or_url)
+            # if file_path:
+            #     setwallpaper with file_path
             pass
-        if plat == "Linux":
+
+        elif plat == "Linux":
             # FIXME: detect when gsettings fails in Desktop.SetWallpaper.
             # This should work on Ubuntu (Unity) and Linux Mint (Cinnamon) at the least.
             old_path = os.popen('gsettings get org.cinnamon.desktop.background picture-uri').read()
 
-            # Check if file exists locally.
-            path = pathlib.Path(path_or_url)
-            if path.is_file():
-                file_path = path_or_url
+            file_path = self.__get_file_path(path_or_url)
+            if file_path:
+                os.system('gsettings set org.cinnamon.desktop.background picture-uri  "{}"'.format(file_path))
 
-            # If file does not exist locally, try to download to temp folder.
+    def __get_file_path(self, path_or_url):
+        # Return the given path if valid, otherwise tries to download the file to the temporary directory, otherwise
+        # returns None.
+
+        # Check if file exists locally.
+        path = pathlib.Path(path_or_url)
+        if path.is_file():
+            return path_or_url
+
+        # If file does not exist locally, try to download to temp folder.
+        else:
+            response = self.__get_response(path_or_url)
+            if response:
+                ntf = tempfile.NamedTemporaryFile(suffix=".tmp", prefix="tmp", delete=False)
+                ntf.write(response.content)
+                ntf.close()
+                return ntf.name
             else:
-                response = self.__get_response(path_or_url)
-                if response:
-                    ntf = tempfile.NamedTemporaryFile(suffix=".tmp", prefix="tmp", delete=False)
-                    ntf.write(response.content)
-                    ntf.close()
-                    file_path = ntf.name
-                else:
-                    return
-
-            os.system('gsettings set org.cinnamon.desktop.background picture-uri  "{}"'.format(file_path))
+                return
 
     def __get_response(self, url):
         try:
             return requests.get(url)
         except BaseException as e:
-            print(e)
             return None
