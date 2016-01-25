@@ -48,11 +48,11 @@ class Desktop(PyMsbModule):
         elif plat == "Linux":
             # FIXME: detect when gsettings fails in Desktop.SetWallpaper.
             # This should work on Ubuntu (Unity) and Linux Mint (Cinnamon) at the least.
-            old_path = os.popen('gsettings get org.cinnamon.desktop.background picture-uri').read()
+            old_path = os.popen('gsettings get org.gnome.desktop.background picture-uri').read()
 
             file_path = self.__get_file_path(path_or_url)
             if file_path:
-                os.system('gsettings set org.cinnamon.desktop.background picture-uri  "{}"'.format(file_path))
+                os.system('gsettings set org.gnome.desktop.background picture-uri  "{}"'.format(file_path))
 
     def __get_file_path(self, path_or_url):
         # Return the given path if valid, otherwise tries to download the file to the temporary directory, otherwise
@@ -61,7 +61,7 @@ class Desktop(PyMsbModule):
         # Check if file exists locally.
         path = pathlib.Path(path_or_url)
         if path.is_file():
-            return path_or_url
+            return path.as_uri()
 
         # If file does not exist locally, try to download to temp folder.
         else:
@@ -70,7 +70,7 @@ class Desktop(PyMsbModule):
                 ntf = tempfile.NamedTemporaryFile(suffix=".tmp", prefix="tmp", delete=False)
                 ntf.write(response.content)
                 ntf.close()
-                return ntf.name
+                return pathlib.Path(ntf.name).as_uri()
             else:
                 return
 

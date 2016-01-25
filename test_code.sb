@@ -1,3 +1,5 @@
+Desktop.SetWallpaper("https://www.gravatar.com/avatar/f76c61a4371d6e5370d8f276d0185b5e?s=32&d=identicon&r=PG")
+
 if Text.Append("", "") <> "" Then
     textwindow.writeline("this is wrong.")
 endif
