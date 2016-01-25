@@ -1,3 +1,4 @@
+import ctypes
 import os
 import platform
 import pathlib
@@ -32,12 +33,9 @@ class Desktop(PyMsbModule):
 
         plat = platform.system()
         if plat == "Windows":
-            # TODO: implement SetWallpaper for Windows; I couldn't get the ctypes code samples to work on my VM.
-            # old_path = ?
-            # file_path = self.__get_file_path(path_or_url)
-            # if file_path:
-            #     setwallpaper with file_path
-            pass
+            file_path = self.__get_file_path(path_or_url)
+            if file_path:
+                ctypes.windll.user32.SystemParametersInfoW(20, 0, file_path, 0)
 
         elif plat == "Darwin":  # This is actually Mac OS X.
             # TODO: implement SetWallpaper for Mac OS X.
